@@ -221,7 +221,7 @@
             // 1. Grafik Jenis Dokumen (Pie Chart)
             const jenisDokumenCtx = document.getElementById('jenisDokumenChart').getContext('2d');
             const jenisDokumenData = {
-                'Dokumen Masuk': 1423,
+                'Dokumen Masuk': 142,
                 'Dokumen Keluar': 76
             };
 
