@@ -84,3 +84,41 @@
                 {{ $divisi->nama_divisi }}
             </option>
         @endforeach
+    </select>
+</div>
+
+<div class="mt-6">
+    <label for="file_surat" class="block text-sm font-medium text-gray-700">Upload File Surat (PDF, DOCX, JPG)</label>
+    <input type="file" id="file_surat" name="file_surat"
+        class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-l-lg file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-indigo-50 file:text-indigo-700
+                  hover:file:bg-indigo-100">
+    @if (isset($surat) && $surat->file_path)
+        <p class="mt-2 text-sm text-gray-500">
+            File saat ini: <a href="{{ asset('storage/' . $surat->file_path) }}" target="_blank"
+                class="font-medium text-indigo-600 hover:text-indigo-900">Lihat File</a>
+        </p>
+        <p class="text-xs text-gray-500">Kosongkan jika tidak ingin mengubah file.</p>
+    @endif
+</div>
+
+<div class="mt-6">
+    <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan (Opsional)</label>
+    <textarea id="keterangan" name="keterangan" rows="4"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ old('keterangan', $surat->keterangan ?? '') }}</textarea>
+</div>
+
+<div class="flex items-center justify-end mt-8 gap-4">
+    <a href="{{ route('surat.index') }}"
+        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-25 transition ease-in-out duration-150">
+        Batal
+    </a>
+
+    <button type="submit"
+        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+        {{ isset($surat) ? 'Update Data' : 'Simpan Data' }}
+    </button>
+</div>

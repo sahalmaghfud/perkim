@@ -34,11 +34,13 @@
         {{-- Header section dengan judul dan tombol tambah --}}
         <div class="p-5 border-b border-gray-200 flex justify-between items-center">
             <h3 class="text-lg font-semibold text-gray-800">Daftar Semua Surat</h3>
-            <a href="{{ route('surat.create', ['divisi_id' => $divisiTerpilih->id ?? null]) }}"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 flex items-center gap-2 text-sm shadow-sm">
-                <i class="fas fa-plus"></i>
-                <span>Tambah Surat</span>
-            </a>
+            @if (auth()->user()->divisi_id == $divisiTerpilih->id)
+                <a href="{{ route('surat.create', ['divisi_id' => $divisiTerpilih->id ?? null]) }}"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 flex items-center gap-2 text-sm shadow-sm">
+                    <i class="fas fa-plus"></i>
+                    <span>Tambah Surat</span>
+                </a>
+            @endif
         </div>
 
         {{-- Kontainer tabel agar responsif --}}

@@ -15,4 +15,16 @@ class Surat extends Model
     {
         return $this->belongsTo(Divisi::class);
     }
+    protected $fillable = [
+        'nomor_surat',
+        'tanggal_surat',
+        'tanggal_diterima',
+        'jenis_surat',
+        'pengirim',
+        'penerima',
+        'perihal',
+        'sifat',
+        'file_path',
+        'divisi_id'
+    ];
 }

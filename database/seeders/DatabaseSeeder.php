@@ -2,13 +2,16 @@
 
 namespace Database\Seeders;
 
-// Pastikan semua model dan class yang dibutuhkan di-import di sini
-use App\Models\Divisi;
-use App\Models\Surat;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Faker\Factory as Faker;
+
+use App\Models\Divisi;
+use App\Models\Dokumen;
+use App\Models\Surat;
+use App\Models\User;
+use App\Models\Pegawai;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,7 +22,6 @@ class DatabaseSeeder extends Seeder
     {
         // =================================================================
         // BAGIAN 1: SEEDING DATA DIVISI
-        // Kita buat data divisi terlebih dahulu karena data lain bergantung padanya.
         // =================================================================
         $this->command->info('Membuat data Divisi...');
 
@@ -37,14 +39,13 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        $divisis = Divisi::all()->keyBy('slug');
+        $divisiIds = Divisi::pluck('id')->toArray();
+
         // =================================================================
         // BAGIAN 2: SEEDING DATA USERS
-        // Ambil data divisi yang baru saja dibuat untuk mengisi foreign key 'divisi_id'.
         // =================================================================
         $this->command->info('Membuat data Users...');
-
-        // Ambil semua divisi dan jadikan slug sebagai key agar mudah dicari
-        $divisis = Divisi::all()->keyBy('slug');
 
         $usersData = [
             [
@@ -52,7 +53,7 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => Hash::make('admin123'),
                 'role' => 'admin',
-                'divisi_slug' => 'tu', // Admin ditempatkan di divisi Tata Usaha
+                'divisi_slug' => 'tu',
             ],
             [
                 'name' => 'User Perumahan',
@@ -84,7 +85,7 @@ class DatabaseSeeder extends Seeder
                     'name' => $user['name'],
                     'password' => $user['password'],
                     'role' => $user['role'],
-                    'divisi_id' => $divisis[$user['divisi_slug']]->id, // Ambil ID divisi berdasarkan slug
+                    'divisi_id' => $divisis[$user['divisi_slug']]->id,
                 ]
             );
         }
@@ -93,8 +94,6 @@ class DatabaseSeeder extends Seeder
         // BAGIAN 3: SEEDING DATA SURAT (DUMMY)
         // =================================================================
         $this->command->info('Membuat data Surat (dummy)...');
-
-        $divisiIds = Divisi::pluck('id')->toArray();
 
         $surats = [];
         $jenisSuratOptions = ['Surat Masuk', 'Surat Keluar'];
@@ -113,18 +112,80 @@ class DatabaseSeeder extends Seeder
                 'penerima' => ($jenisSurat == 'Surat Keluar') ? 'PT. Mitra Bisnis ' . $i : 'Internal Perusahaan',
                 'perihal' => 'Perihal Dokumen Penting Nomor ' . $i,
                 'sifat' => $sifatOptions[array_rand($sifatOptions)],
-                'file_path' => 'public/files/dummy_surat_' . $i . '.pdf',
-                'divisi_id' => $divisiIds[array_rand($divisiIds)], // Pilih ID divisi secara acak
+                'file_path' => 'surat-files/form.pdf',
+                'divisi_id' => $divisiIds[array_rand($divisiIds)],
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }
 
-        // Hapus data surat lama agar tidak menumpuk jika seeder dijalankan ulang
         Surat::truncate();
-        // Masukkan semua data sekaligus untuk performa yang lebih baik
         Surat::insert($surats);
 
+        // =================================================================
+        // BAGIAN 4: SEEDING DATA DOKUMEN (DUMMY)
+        // =================================================================
+        $this->command->info('Membuat data Dokumen (dummy)...');
+
+        $dokumens = [];
+        $kategoriOptions = ['Keuangan', 'HRD', 'Teknis', 'Umum', 'Pemasaran'];
+        $tipeDokumenOptions = ['SOP', 'Laporan Bulanan', 'Kontrak', 'Memo Internal', 'Presentasi'];
+
+        for ($i = 1; $i <= 25; $i++) {
+            $tanggalTerbit = now()->subDays(rand(1, 730));
+            $kategori = $kategoriOptions[array_rand($kategoriOptions)];
+
+            $dokumens[] = [
+                'kode_dokumen' => 'DOC-' . $tanggalTerbit->format('Y') . '-' . str_pad($i, 5, '0', STR_PAD_LEFT),
+                'judul' => 'Judul Dokumen ' . Str::title(str_replace('_', ' ', $kategori)) . ' ' . $i,
+                'kategori' => $kategori,
+                'tipe_dokumen' => $tipeDokumenOptions[array_rand($tipeDokumenOptions)],
+                'deskripsi' => 'Ini adalah deskripsi untuk dokumen ' . $i . '. Dokumen ini berisi informasi penting terkait kategori ' . $kategori . '.',
+                'tanggal_terbit' => $tanggalTerbit,
+                'file_path' => 'dokumen-files/form.pdf',
+                'divisi_id' => $divisiIds[array_rand($divisiIds)],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        Dokumen::truncate();
+        Dokumen::insert($dokumens);
+
+        // =================================================================
+        // BAGIAN 5: SEEDING DATA PEGAWAI (DUMMY)
+        // =================================================================
+        $this->command->info('Membuat data Pegawai (dummy)...');
+
+        if (empty($divisiIds)) {
+            $this->command->info('Tidak ada data di tabel divisis. Silakan jalankan DivisiSeeder terlebih dahulu.');
+            return;
+        }
+
+        Pegawai::truncate();
+
+        $faker = Faker::create('id_ID');
+        $jabatan = ['Staff', 'Ketua'];
+        $statusOptions = ['aktif', 'permanen', 'kontrak'];
+
+        foreach (range(1, 20) as $index) {
+            Pegawai::create([
+                'nip' => $faker->unique()->numerify('199#######' . $index),
+                'nama_lengkap' => $faker->name(),
+                'divisi_id' => $faker->randomElement($divisiIds),
+                'jabatan' => $faker->randomElement($jabatan),
+                'email' => $faker->unique()->safeEmail(),
+                'nomor_telepon' => $faker->phoneNumber(),
+                'alamat' => $faker->address(),
+                'tanggal_lahir' => $faker->dateTimeBetween('-30 years', '-20 years')->format('Y-m-d'),
+                'tanggal_masuk' => $faker->dateTimeBetween('-5 years', 'now'),
+                'status' => $faker->randomElement($statusOptions),
+            ]);
+        }
+
+        // =================================================================
+        // SELESAI
+        // =================================================================
         $this->command->info('Database seeding selesai!');
     }
 }

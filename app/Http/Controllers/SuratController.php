@@ -1,20 +1,28 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Divisi;
+use App\Models\Surat;
 use Illuminate\Http\Request;
-use App\Models\Surat; // Asumsi Anda punya model Surat
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse; // Import untuk type-hinting
 
 class SuratController extends Controller
 {
+    /**
+     * Menampilkan daftar semua surat dengan filter dan pencarian.
+     */
     public function index(Request $request)
     {
-        $query = Surat::with('divisi')->latest(); // Eager loading untuk efisiensi
+        $query = Surat::with('divisi')->latest();
 
-        // Logika untuk Pencarian
+        // [PERBAIKAN] Mengelompokkan query pencarian agar tidak bentrok dengan filter
         if ($request->filled('search')) {
-            $query->where('nomor_surat', 'like', '%' . $request->search . '%')
-                ->orWhere('perihal', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nomor_surat', 'like', '%' . $request->search . '%')
+                    ->orWhere('perihal', 'like', '%' . $request->search . '%');
+            });
         }
 
         // Logika untuk Filter Divisi
@@ -22,65 +30,59 @@ class SuratController extends Controller
             $query->where('divisi_id', $request->divisi_id);
         }
 
-        $daftarSurat = $query->paginate(10); // Paginasi 10 data per halaman
-        $divisi = Divisi::all();
+        $daftarSurat = $query->paginate(10)->withQueryString(); // withQueryString() agar filter tetap ada saat pindah halaman
+        $divisiList = Divisi::orderBy('nama_divisi')->get();
 
         return view('surat.index', [
             'surats' => $daftarSurat,
-            'divisiList' => $divisi,
-            'request' => $request // Kirim request untuk mempertahankan value di form filter
+            'divisiList' => $divisiList,
+            // 'request' tidak perlu dikirim karena bisa diakses global via helper request() di view
         ]);
     }
 
     /**
      * Menampilkan form untuk membuat surat baru.
      */
-    // ...
     public function create(Request $request)
     {
         return view('surat.create', [
-            'divisiList' => Divisi::all(),
-            // Kirim ID divisi yang dipilih dari URL ke view
-            'selectedDivisiId' => $request->divisi_id
+            'divisiList' => Divisi::orderBy('nama_divisi')->get(),
+            'selectedDivisiId' => $request->query('divisi_id') // Lebih baik mengambil dari query string
         ]);
     }
-    // ...
 
     /**
      * Menyimpan surat baru ke database.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
+
+        dd($request->file('file_surat'));
         $validatedData = $request->validate([
-            'nomor_surat' => 'required|string|max:255|unique:surats',
+            'nomor_surat' => 'required|string|max:255|unique:surats,nomor_surat',
             'tanggal_surat' => 'required|date',
-            'jenis_surat' => 'required|string',
+            'jenis_surat' => 'required|string|in:Surat Masuk,Surat Keluar',
             'perihal' => 'required|string',
             'sifat' => 'required|string',
-            'pengirim' => 'nullable|string',
-            'penerima' => 'nullable|string',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
             'divisi_id' => 'required|exists:divisis,id',
-            'file' => 'required|file|mimes:pdf,doc,docx|max:2048', // File maks 2MB
+            'keterangan' => 'nullable|string',
+            // [PERBAIKAN] Mengganti 'file' menjadi 'file_surat' sesuai form
+            'file_surat' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
-        if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('public/files');
+        if ($request->hasFile('file_surat')) {
+            // [PERBAIKAN] Menyimpan file ke storage/app/public/surat-files
+            // Ini adalah praktik terbaik untuk file yang bisa diakses publik.
+            $path = $request->file('file_surat')->store('surat-files', 'public');
             $validatedData['file_path'] = $path;
         }
 
-        $surat = Surat::create($validatedData);
+        Surat::create($validatedData);
 
-        // Cari tahu nama divisi dari ID yang baru saja disimpan
-        $divisi = Divisi::find($surat->divisi_id);
-
-        // Jika divisi ditemukan, arahkan ke halaman divisi tersebut.
-        // Jika tidak (seharusnya tidak mungkin terjadi), arahkan ke halaman utama.
-        if ($divisi) {
-            return redirect()->route('surat.divisi', ['nama_divisi' => $divisi->nama_divisi])
-                ->with('success', 'Surat berhasil ditambahkan!');
-        }
-
-        return redirect()->route('surat.index')->with('success', 'Surat berhasil ditambahkan!');
+        // [PERBAIKAN] Redirect ke halaman index agar lebih konsisten
+        return redirect()->back()->with('success', 'Surat berhasil ditambahkan!');
     }
 
     /**
@@ -88,6 +90,8 @@ class SuratController extends Controller
      */
     public function show(Surat $surat)
     {
+        // Eager load relasi divisi
+        $surat->load('divisi');
         return view('surat.show', compact('surat'));
     }
 
@@ -98,80 +102,80 @@ class SuratController extends Controller
     {
         return view('surat.edit', [
             'surat' => $surat,
-            'divisiList' => Divisi::all()
+            'divisiList' => Divisi::orderBy('nama_divisi')->get()
         ]);
     }
 
     /**
      * Memperbarui data surat di database.
      */
-    public function update(Request $request, Surat $surat)
+    public function update(Request $request, Surat $surat): RedirectResponse
     {
         $validatedData = $request->validate([
+            // Abaikan unique check untuk record saat ini
             'nomor_surat' => 'required|string|max:255|unique:surats,nomor_surat,' . $surat->id,
             'tanggal_surat' => 'required|date',
-            'jenis_surat' => 'required|string',
+            'jenis_surat' => 'required|string|in:Surat Masuk,Surat Keluar',
             'perihal' => 'required|string',
             'sifat' => 'required|string',
-            'pengirim' => 'nullable|string',
-            'penerima' => 'nullable|string',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
             'divisi_id' => 'required|exists:divisis,id',
-            'file' => 'nullable|file|mimes:pdf,doc,docx|max:2048', // File tidak wajib diisi saat update
+            'keterangan' => 'nullable|string',
+            'file_surat' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
-        // if ($request->hasFile('file')) {
-        //     // Hapus file lama jika ada
-        //     // if ($surat->file_path) {
-        //     //     Storage::delete($surat->file_path);
-        //     // }
-        //     // Upload file baru
-        //     $path = $request->file('file')->store('public/files');
-        //     $validatedData['file_path'] = $path;
-        // }
+        if ($request->hasFile('file_surat')) {
+            // [PERBAIKAN] Hapus file lama jika ada sebelum mengupload yang baru
+            if ($surat->file_path) {
+                Storage::disk('public')->delete($surat->file_path);
+            }
+            // Upload file baru
+            $path = $request->file('file_surat')->store('surat-files', 'public');
+            $validatedData['file_path'] = $path;
+        }
 
         $surat->update($validatedData);
 
-        return redirect()->back()->with('success', 'Surat berhasil diperbarui!');
+        return redirect()->route('surat.index')->with('success', 'Surat berhasil diperbarui!');
     }
 
     /**
      * Menghapus surat dari database.
      */
-    public function destroy(Surat $surat)
+    public function destroy(Surat $surat): RedirectResponse
     {
-        // Hapus file terkait dari storage
-        // if ($surat->file_path) {
-        //     Storage::delete($surat->file_path);
-        // }
+        // [PERBAIKAN] Hapus file terkait dari storage menggunakan disk 'public'
+        if ($surat->file_path) {
+            Storage::disk('public')->delete($surat->file_path);
+        }
 
         $surat->delete();
 
-        return redirect()->back()->with('success', 'Surat berhasil dihapus!');
+        return redirect()->route('surat.index')->with('success', 'Surat berhasil dihapus!');
     }
 
-    /**
-     * Menampilkan surat berdasarkan divisi yang dipilih dari URL.
-     * Method ini akan diakses melalui route '/surat/{nama_divisi}'.
-     * * @param string $namaDivisi Nilai ini otomatis diisi Laravel dari parameter rute.
-     */
-    public function showByDivisi($nama_divisi)
+    public function showByDivisi(Request $request, $nama_divisi)
     {
-        // Cari divisi berdasarkan nama. Jika tidak ditemukan, tampilkan halaman 404.
         $divisi = Divisi::where('nama_divisi', $nama_divisi)->firstOrFail();
 
-        // Ambil semua surat yang memiliki divisi_id yang cocok, urutkan dari yang terbaru
-        $daftarSurat = Surat::with('divisi')
-            ->where('divisi_id', $divisi->id)
-            ->latest()
-            ->paginate(10); // Gunakan paginasi juga di sini
+        // Kita bisa menggunakan kembali logika dari method index()
+        $query = Surat::with('divisi')->where('divisi_id', $divisi->id)->latest();
 
-        // Kita bisa menggunakan kembali view 'surat.index'
-        // karena fungsinya sama, yaitu menampilkan daftar surat.
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nomor_surat', 'like', '%' . $request->search . '%')
+                    ->orWhere('perihal', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $daftarSurat = $query->paginate(10)->withQueryString();
+        $divisiList = Divisi::orderBy('nama_divisi')->get();
+
         return view('surat.index', [
             'surats' => $daftarSurat,
-            'divisiList' => Divisi::all(), // Kirim semua divisi untuk filter dropdown
-            'divisiTerpilih' => $divisi,   // Kirim info divisi yang sedang aktif
-            'request' => request() // Untuk mempertahankan value filter jika ada
+            'divisiList' => $divisiList,
+            'divisiTerpilih' => $divisi,
         ]);
     }
 }

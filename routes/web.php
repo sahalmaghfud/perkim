@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DokumenController;
+use App\Http\Controllers\pegawaiController;
 use App\Http\Controllers\SuratController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login')->middleware('guest');
@@ -14,7 +16,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 // Rute untuk halaman dashboard yang dilindungi (Middleware: auth)
 Route::get('/dashboard', function () {
-    return redirect()->route('surat.index');
+    return redirect()->route('/dashboard');
 })->name('dashboard')->middleware('auth');
 
 
@@ -22,12 +24,22 @@ Route::get('/dashboard', function () {
 Route::get('/', function () {
     return redirect()->route('login');
 });
-Route::get('/surat', [SuratController::class, 'index'])->name('surat.index');
-
-Route::get('/{nama_divisi}/surat', [SuratController::class, 'showByDivisi'])->name('surat.divisi');
 
 Route::resource('surat', SuratController::class);
+Route::resource('dokumen', DokumenController::class)
+    ->parameters(['dokumen' => 'dokumen']);
 
-Route::get('/', function () {
+
+
+// Route khusus untuk menampilkan dokumen berdasarkan divisi (disesuaikan agar konsisten)
+Route::get('/{nama_divisi}/dokumen', [DokumenController::class, 'showByDivisi'])->name('dokumen.divisi');
+Route::get('/{nama_divisi}/surat', [SuratController::class, 'showByDivisi'])->name('surat.divisi');
+
+Route::get('/dashboard', function () {
     return view('dashboard');
 });
+
+
+Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
+
+Route::get('/pegawai/export', [PegawaiController::class, 'export'])->name('pegawai.export');
