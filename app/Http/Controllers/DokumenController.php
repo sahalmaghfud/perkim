@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Divisi;
+use App\Models\bidang;
 use App\Models\Dokumen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule; // Import Rule untuk validasi unique yang lebih rapi
+use Illuminate\Validation\Rule;
 
 class DokumenController extends Controller
 {
@@ -15,30 +15,30 @@ class DokumenController extends Controller
      */
     public function index(Request $request)
     {
-        // Memulai query dengan eager loading relasi 'divisi' untuk efisiensi
-        $query = Dokumen::with('divisi')->latest();
+        // Memulai query dengan eager loading relasi 'bidang' untuk efisiensi
+        $query = Dokumen::with('bidang')->latest();
 
-        // [PERBAIKAN] Mengelompokkan query pencarian agar tidak bentrok dengan filter lain
+        // [PENYESUAIAN] Mengelompokkan query pencarian dan menghapus pencarian berdasarkan 'kode_dokumen'
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('judul', 'like', '%' . $request->search . '%')
-                    ->orWhere('kode_dokumen', 'like', '%' . $request->search . '%');
+                // Pencarian hanya berdasarkan 'judul' karena 'kode_dokumen' sudah tidak ada
+                $q->where('judul', 'like', '%' . $request->search . '%');
             });
         }
 
-        // Logika untuk Filter berdasarkan Divisi
-        if ($request->filled('divisi_id')) {
-            $query->where('divisi_id', $request->divisi_id);
+        // Logika untuk Filter berdasarkan bidang
+        if ($request->filled('bidang_id')) {
+            $query->where('bidang_id', $request->bidang_id);
         }
 
         // Paginasi hasil query
         $daftarDokumen = $query->paginate(10);
-        $divisi = Divisi::all();
+        $bidang = bidang::all();
 
         // Mengembalikan view dengan data yang diperlukan
         return view('dokumen.index', [
             'dokumens' => $daftarDokumen,
-            'divisiList' => $divisi,
+            'bidangList' => $bidang,
             'request' => $request
         ]);
     }
@@ -49,42 +49,70 @@ class DokumenController extends Controller
     public function create()
     {
         return view('dokumen.create', [
-            'divisiList' => Divisi::all()
+            'bidangList' => bidang::all()
         ]);
     }
 
     /**
      * Menyimpan dokumen baru ke dalam database.
      */
-    // DokumenController.php
+    // ... bagian atas controller sama ...
 
     public function store(Request $request)
     {
-        // Validasi biarkan saja seperti biasa
+        // [PENYESUAIAN] Validasi tetap sama
         $validatedData = $request->validate([
-            'kode_dokumen' => 'nullable|string|max:255|unique:dokumens,kode_dokumen',
             'judul' => 'required|string|max:255',
             'kategori' => 'required|string|max:255',
-            'tipe_dokumen' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'tanggal_terbit' => 'required|date',
-            'divisi_id' => 'required|exists:divisis,id',
+            'tipe_dokumen' => 'required|in:dokumen,surat',
+            'bidang_id' => 'required|exists:bidang,id',
+            'tanggal' => 'required|date',
             'file_dokumen' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:5120',
+            'deskripsi' => 'nullable|string',
+            'nomor_surat' => 'nullable|string|max:255',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
+            'perihal' => 'nullable|string',
+            'lampiran' => 'nullable|integer',
+            'tanggal_surat' => 'nullable|date',
         ]);
 
-        // Kita akan debug di sini
+        // [PENYESUAIAN] Logika baru untuk menyimpan file
         if ($request->hasFile('file_dokumen')) {
+            // 1. Ambil file dari request
+            $file = $request->file('file_dokumen');
 
-            // Coba simpan filenya
-            $path = $request->file('file_dokumen')->store('dokumen-files', 'public');
+
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+            // 3. Ambil ekstensi file
+            $extension = $file->getClientOriginalExtension();
+
+            // 4. Buat nama baru (nama_asli + timestamp + ekstensi)
+            $newFileName = $originalName . '_' . now()->format('Y-m-d_H-i-s') . '.' . $extension;
+
+
+            // 4. Simpan file dengan nama baru menggunakan storeAs()
+            //    Argumen: (path, nama_file_baru, disk)
+            $path = $file->storeAs('dokumen-files', $newFileName, 'public');
+
+            // 5. Simpan path ke database
             $validatedData['file_path'] = $path;
         }
 
-        // Kode di bawah ini tidak akan dieksekusi karena ada dd() di atas
+        unset($validatedData['file_dokumen']);
         Dokumen::create($validatedData);
 
-        return redirect()->route('dokumen.index')->with('success', 'Dokumen berhasil ditambahkan!');
+        $bidang = Bidang::find($validatedData['bidang_id']);
+        $namaBidang = $bidang->nama_bidang; // Asumsikan kolom nama di tabel bidang adalah 'nama'
+
+
+        // Redirect dengan pesan sukses yang menyertakan nama bidang
+        return redirect()->route('dokumen.bidang', $namaBidang)
+            ->with('success', "Dokumen berhasil ditambahkan ke {$namaBidang}!");
     }
+
+    // ...
 
     /**
      * Menampilkan detail dari satu dokumen.
@@ -101,7 +129,7 @@ class DokumenController extends Controller
     {
         return view('dokumen.edit', [
             'dokumen' => $dokumen,
-            'divisiList' => Divisi::all()
+            'bidangList' => bidang::all()
         ]);
     }
 
@@ -110,44 +138,43 @@ class DokumenController extends Controller
      */
     public function update(Request $request, Dokumen $dokumen)
     {
-        // [PERBAIKAN] Menyesuaikan validasi untuk update
+        // Validasi tetap sama
         $validatedData = $request->validate([
-            // 'kode_dokumen' harus unik, kecuali untuk ID dokumen yang sedang diedit
-            'kode_dokumen' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('dokumens')->ignore($dokumen->id),
-            ],
             'judul' => 'required|string|max:255',
-            'kategori' => 'required|string|max:255',
-            'tipe_dokumen' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'tanggal_terbit' => 'required|date',
-            'divisi_id' => 'required|exists:divisis,id',
-            // File tidak wajib saat update, dan nama input disesuaikan
-            'file_dokumen' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:5120',
+            // ... validasi lainnya ...
+            'tanggal_surat' => 'nullable|date',
         ]);
 
-        // [PERBAIKAN] Mengaktifkan dan memperbaiki logika update file
+        // [PENYESUAIAN] Logika baru untuk update file
         if ($request->hasFile('file_dokumen')) {
             // Hapus file lama jika ada
             if ($dokumen->file_path) {
-                // Gunakan path lengkap 'public/...' untuk menghapus
-                Storage::delete('public/' . $dokumen->file_path);
+                Storage::disk('public')->delete($dokumen->file_path);
             }
-            // Upload file baru
-            $path = $request->file('file_dokumen')->store('public/dokumen');
-            $validatedData['file_path'] = str_replace('public/', '', $path);
+
+            // 1. Ambil file dari request
+            $file = $request->file('file_dokumen');
+
+            // 2. Ambil nama asli file
+            $originalName = $file->getClientOriginalName();
+
+            // 3. Buat nama baru yang unik
+            $newFileName = $originalName . '_' . now()->format('Y-m-d_H-i-s');
+
+            // 4. Simpan file baru dengan nama kustom
+            $path = $file->storeAs('dokumen-files', $newFileName, 'public');
+            $validatedData['file_path'] = $path;
         }
 
-        // Hapus key 'file_dokumen' karena tidak ada di tabel DB
         unset($validatedData['file_dokumen']);
-
-        // [PERBAIKAN] Mengaktifkan logika update record
         $dokumen->update($validatedData);
 
-        return redirect()->route('dokumen.index')->with('success', 'Dokumen berhasil diperbarui!');
+        $bidang = Bidang::find($validatedData['bidang_id']);
+        $namaBidang = $bidang->nama_bidang; // Asumsikan kolom nama di tabel bidang adalah 'nama'
+
+        // Redirect dengan pesan sukses yang menyertakan nama bidang
+        return redirect()->route('dokumen.bidang', $namaBidang)
+            ->with('success', "Dokumen berhasil edit");
     }
 
     /**
@@ -157,67 +184,54 @@ class DokumenController extends Controller
     {
         // Hapus file terkait dari storage jika ada
         if ($dokumen->file_path) {
-            Storage::delete('public/' . $dokumen->file_path);
+            Storage::disk('public')->delete($dokumen->file_path);
         }
 
         // Hapus record dari database
         $dokumen->delete();
 
-        return redirect()->route('dokumen.index')->with('success', 'Dokumen berhasil dihapus!');
+        $bidang = Bidang::find($dokumen['bidang_id']);
+        $namaBidang = $bidang->nama_bidang;
+
+        // Redirect dengan pesan sukses yang menyertakan nama bidang
+        return redirect()->route('dokumen.bidang', $namaBidang)
+            ->with('success', "Dokumen berhasil dihapus!");
     }
 
     /**
-     * Menampilkan dokumen berdasarkan divisi.
+     * Menampilkan dokumen berdasarkan bidang.
      */
-    public function showByDivisi(Request $request, $nama_divisi) // Inject Request di sini
+    public function showBybidang(Request $request, $nama_bidang)
     {
-        // 1. Cari divisi berdasarkan nama dari URL. Ini menjadi konteks/default.
-        $divisiTerpilih = Divisi::where('nama_divisi', $nama_divisi)->firstOrFail();
-
-        // 2. Ambil data untuk mengisi dropdown filter di view
-        $divisiList = Divisi::orderBy('nama_divisi')->get();
-        // [BARU] Ambil daftar kategori unik dari semua dokumen
+        $bidangTerpilih = bidang::where('nama_bidang', $nama_bidang)->firstOrFail();
+        $bidangList = bidang::orderBy('nama_bidang')->get();
         $kategoriList = Dokumen::select('kategori')->distinct()->orderBy('kategori')->pluck('kategori');
+        $query = Dokumen::with('bidang')->latest();
 
-        // 3. Mulai query builder
-        $query = Dokumen::with('divisi')->latest();
-
-        // 4. Terapkan filter berdasarkan request dari form
-        //    (Ini akan menimpa filter default jika user memilih divisi lain di form)
-
-        // Filter: Pencarian Teks (Judul atau Kode)
+        // [PENYESUAIAN] Menghapus pencarian berdasarkan 'kode_dokumen'
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('judul', 'like', '%' . $request->search . '%')
-                    ->orWhere('kode_dokumen', 'like', '%' . $request->search . '%');
+                $q->where('judul', 'like', '%' . $request->search . '%');
             });
         }
 
-        // Filter: Kategori
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
         }
 
-        // Filter: Divisi
-        // Logika: Jika user memilih divisi di form, gunakan itu.
-        // Jika tidak, gunakan divisi dari URL sebagai filter.
-        if ($request->filled('divisi_id')) {
-            $query->where('divisi_id', $request->divisi_id);
+        if ($request->filled('bidang_id')) {
+            $query->where('bidang_id', $request->bidang_id);
         } else {
-            // Filter default berdasarkan divisi dari URL
-            $query->where('divisi_id', $divisiTerpilih->id);
+            $query->where('bidang_id', $bidangTerpilih->id);
         }
 
-        // 5. Eksekusi query dengan paginasi
-        // withQueryString() penting agar filter tetap aktif saat pindah halaman
         $daftarDokumen = $query->paginate(10)->withQueryString();
 
-        // 6. Kirim semua data yang diperlukan ke view
         return view('dokumen.index', [
             'dokumens' => $daftarDokumen,
-            'divisiList' => $divisiList,
-            'kategoriList' => $kategoriList, // Kirim daftar kategori
-            'divisiTerpilih' => $divisiTerpilih, // Kirim divisi dari URL untuk konteks (judul, tombol, dll)
+            'bidangList' => $bidangList,
+            'kategoriList' => $kategoriList,
+            'bidangTerpilih' => $bidangTerpilih,
         ]);
     }
 }

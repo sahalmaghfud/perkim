@@ -10,9 +10,9 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('divisis', function (Blueprint $table) {
+        Schema::create('bidang', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_divisi');
+            $table->string('nama_bidang');
             $table->string('slug')->unique();
             $table->timestamps();
         });
@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role')->default('user');
-            $table->foreignId('divisi_id')->constrained('divisis')->onDelete('cascade');
+            $table->foreignId('bidang_id')->constrained('bidang')->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();
         });
@@ -49,7 +49,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('divisis');
+        Schema::dropIfExists('bidang');
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');

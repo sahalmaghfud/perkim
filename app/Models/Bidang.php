@@ -4,17 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Divisi extends Model
+class Bidang extends Model
 {
+    protected $table = 'bidang';
     protected $fillable = [
         'nama',
 
     ];
-
-    public function surats()
-    {
-        return $this->hasMany(Surat::class);
-    }
 
     public function pegawai()
     {

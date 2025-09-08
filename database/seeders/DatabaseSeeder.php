@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Faker\Factory as Faker;
 
-use App\Models\Divisi;
+use App\Models\bidang;
 use App\Models\Dokumen;
-use App\Models\Surat;
 use App\Models\User;
 use App\Models\Pegawai;
 
@@ -21,26 +20,26 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // =================================================================
-        // BAGIAN 1: SEEDING DATA DIVISI
+        // BAGIAN 1: SEEDING DATA bidang
         // =================================================================
-        $this->command->info('Membuat data Divisi...');
+        $this->command->info('Membuat data bidang...');
 
-        $divisiData = [
-            ['nama_divisi' => 'perumahan'],
-            ['nama_divisi' => 'permukiman'],
-            ['nama_divisi' => 'psu'], // Prasarana, Sarana, dan Utilitas Umum
-            ['nama_divisi' => 'tu'],  // Tata Usaha
+        $bidangData = [
+            ['nama_bidang' => 'perumahan'],
+            ['nama_bidang' => 'permukiman'],
+            ['nama_bidang' => 'psu'], // Prasarana, Sarana, dan Utilitas Umum
+            ['nama_bidang' => 'tu'],  // Tata Usaha
         ];
 
-        foreach ($divisiData as $data) {
-            Divisi::updateOrCreate(
-                ['nama_divisi' => $data['nama_divisi']],
-                ['slug' => Str::slug($data['nama_divisi'])]
+        foreach ($bidangData as $data) {
+            bidang::updateOrCreate(
+                ['nama_bidang' => $data['nama_bidang']],
+                ['slug' => Str::slug($data['nama_bidang'])]
             );
         }
 
-        $divisis = Divisi::all()->keyBy('slug');
-        $divisiIds = Divisi::pluck('id')->toArray();
+        $bidangs = bidang::all()->keyBy('slug');
+        $bidangIds = bidang::pluck('id')->toArray();
 
         // =================================================================
         // BAGIAN 2: SEEDING DATA USERS
@@ -53,28 +52,28 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => Hash::make('admin123'),
                 'role' => 'admin',
-                'divisi_slug' => 'tu',
+                'bidang_slug' => 'tu',
             ],
             [
                 'name' => 'User Perumahan',
                 'email' => 'perumahan@example.com',
                 'password' => Hash::make('perumahan123'),
                 'role' => 'user',
-                'divisi_slug' => 'perumahan',
+                'bidang_slug' => 'perumahan',
             ],
             [
                 'name' => 'User Permukiman',
                 'email' => 'permukiman@example.com',
                 'password' => Hash::make('permukiman123'),
                 'role' => 'user',
-                'divisi_slug' => 'permukiman',
+                'bidang_slug' => 'permukiman',
             ],
             [
                 'name' => 'User PSU',
                 'email' => 'psu@example.com',
                 'password' => Hash::make('psu123'),
                 'role' => 'user',
-                'divisi_slug' => 'psu',
+                'bidang_slug' => 'psu',
             ],
         ];
 
@@ -85,68 +84,78 @@ class DatabaseSeeder extends Seeder
                     'name' => $user['name'],
                     'password' => $user['password'],
                     'role' => $user['role'],
-                    'divisi_id' => $divisis[$user['divisi_slug']]->id,
+                    'bidang_id' => $bidangs[$user['bidang_slug']]->id,
                 ]
             );
         }
 
-        // =================================================================
-        // BAGIAN 3: SEEDING DATA SURAT (DUMMY)
-        // =================================================================
-        $this->command->info('Membuat data Surat (dummy)...');
 
-        $surats = [];
-        $jenisSuratOptions = ['Surat Masuk', 'Surat Keluar'];
-        $sifatOptions = ['Sangat Rahasia', 'Rahasia', 'Penting', 'Biasa'];
-
-        for ($i = 1; $i <= 20; $i++) {
-            $tanggalSurat = now()->subDays(rand(1, 365));
-            $jenisSurat = $jenisSuratOptions[array_rand($jenisSuratOptions)];
-
-            $surats[] = [
-                'nomor_surat' => 'SRT/' . date('Y') . '/' . date('m') . '/' . str_pad($i, 4, '0', STR_PAD_LEFT),
-                'tanggal_surat' => $tanggalSurat,
-                'tanggal_diterima' => $tanggalSurat->copy()->addDays(rand(1, 5)),
-                'jenis_surat' => $jenisSurat,
-                'pengirim' => ($jenisSurat == 'Surat Masuk') ? 'PT. Klien Eksternal ' . $i : 'Internal Perusahaan',
-                'penerima' => ($jenisSurat == 'Surat Keluar') ? 'PT. Mitra Bisnis ' . $i : 'Internal Perusahaan',
-                'perihal' => 'Perihal Dokumen Penting Nomor ' . $i,
-                'sifat' => $sifatOptions[array_rand($sifatOptions)],
-                'file_path' => 'surat-files/form.pdf',
-                'divisi_id' => $divisiIds[array_rand($divisiIds)],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        Surat::truncate();
-        Surat::insert($surats);
 
         // =================================================================
-        // BAGIAN 4: SEEDING DATA DOKUMEN (DUMMY)
+        // BAGIAN 3: SEEDING DATA DOKUMEN (DUMMY)
         // =================================================================
-        $this->command->info('Membuat data Dokumen (dummy)...');
-
         $dokumens = [];
         $kategoriOptions = ['Keuangan', 'HRD', 'Teknis', 'Umum', 'Pemasaran'];
-        $tipeDokumenOptions = ['SOP', 'Laporan Bulanan', 'Kontrak', 'Memo Internal', 'Presentasi'];
+        $tipeDokumenOptions = ['dokumen', 'surat'];
+        $pengirimOptions = [
+            'PT. Karya Anak Bangsa',
+            'PT. Sinar Jaya Abadi',
+            'CV. Mitra Konstruksi',
+            'Dinas Pekerjaan Umum dan Perumahan Rakyat',
+            'Badan Perencanaan Pembangunan Daerah',
+            'Dinas Perumahan Dan Kawasan Permukiman Muaro Jambi'
+        ];
+        $penerimaOptions = [
+            'PT. Sejahtera Bersama',
+            'Kantor Bupati Muaro Jambi',
+            'Dinas Lingkungan Hidup',
+            'PT. Adhi Karya (Persero) Tbk',
+            'Divisi Internal',
+            'Dinas Perumahan Dan Kawasan Permukiman Muaro Jambi'
+        ];
 
         for ($i = 1; $i <= 25; $i++) {
-            $tanggalTerbit = now()->subDays(rand(1, 730));
+            // [PENYESUAIAN] Mengubah nama variabel agar sesuai dengan nama kolom
+            $tanggal = now()->subDays(rand(1, 730));
             $kategori = $kategoriOptions[array_rand($kategoriOptions)];
+            $tipeDokumen = $tipeDokumenOptions[array_rand($tipeDokumenOptions)];
 
-            $dokumens[] = [
-                'kode_dokumen' => 'DOC-' . $tanggalTerbit->format('Y') . '-' . str_pad($i, 5, '0', STR_PAD_LEFT),
-                'judul' => 'Judul Dokumen ' . Str::title(str_replace('_', ' ', $kategori)) . ' ' . $i,
+            // Data dasar untuk semua tipe
+            $dokumenData = [
+                // 'kode_dokumen' dihapus
+                'judul' => 'Judul ' . Str::title($tipeDokumen) . ' ' . Str::title($kategori) . ' ' . $i,
                 'kategori' => $kategori,
-                'tipe_dokumen' => $tipeDokumenOptions[array_rand($tipeDokumenOptions)],
-                'deskripsi' => 'Ini adalah deskripsi untuk dokumen ' . $i . '. Dokumen ini berisi informasi penting terkait kategori ' . $kategori . '.',
-                'tanggal_terbit' => $tanggalTerbit,
-                'file_path' => 'dokumen-files/form.pdf',
-                'divisi_id' => $divisiIds[array_rand($divisiIds)],
+                'tipe_dokumen' => $tipeDokumen,
+                'deskripsi' => 'Ini adalah deskripsi untuk ' . $tipeDokumen . ' ' . $i . '. Dokumen ini berisi informasi terkait kategori ' . $kategori . '.',
+                'tanggal' => $tanggal, // Nama field diubah
+                'file_path' => 'dokumen-files/dummy-document.pdf',
+                'bidang_id' => $bidangIds[array_rand($bidangIds)],
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+            if ($tipeDokumen === 'surat') {
+                $tanggalSurat = $tanggal->copy()->subDays(rand(1, 5));
+                $dokumenData = array_merge($dokumenData, [
+                    'nomor_surat' => 'SRT/' . $tanggalSurat->format('Y/m') . '/' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                    'pengirim' => $pengirimOptions[array_rand($pengirimOptions)],
+                    'penerima' => $penerimaOptions[array_rand($penerimaOptions)],
+                    'perihal' => 'Perihal Mengenai ' . $kategori . ' untuk Dokumen ' . $i,
+                    'lampiran' => rand(0, 3),
+                    'tanggal_surat' => $tanggalSurat,
+                ]);
+            } else {
+                // Pastikan field surat bernilai null jika tipenya 'dokumen'
+                $dokumenData = array_merge($dokumenData, [
+                    'nomor_surat' => null,
+                    'pengirim' => null,
+                    'penerima' => null,
+                    'perihal' => null,
+                    'lampiran' => null,
+                    'tanggal_surat' => null,
+                ]);
+            }
+
+            $dokumens[] = $dokumenData;
         }
 
         Dokumen::truncate();
@@ -157,8 +166,8 @@ class DatabaseSeeder extends Seeder
         // =================================================================
         $this->command->info('Membuat data Pegawai (dummy)...');
 
-        if (empty($divisiIds)) {
-            $this->command->info('Tidak ada data di tabel divisis. Silakan jalankan DivisiSeeder terlebih dahulu.');
+        if (empty($bidangIds)) {
+            $this->command->info('Tidak ada data di tabel bidangs. Silakan jalankan bidangSeeder terlebih dahulu.');
             return;
         }
 
@@ -172,7 +181,7 @@ class DatabaseSeeder extends Seeder
             Pegawai::create([
                 'nip' => $faker->unique()->numerify('199#######' . $index),
                 'nama_lengkap' => $faker->name(),
-                'divisi_id' => $faker->randomElement($divisiIds),
+                'bidang_id' => $faker->randomElement($bidangIds),
                 'jabatan' => $faker->randomElement($jabatan),
                 'email' => $faker->unique()->safeEmail(),
                 'nomor_telepon' => $faker->phoneNumber(),

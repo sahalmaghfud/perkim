@@ -18,7 +18,7 @@ class pegawai extends Model
     protected $fillable = [
         'nip',
         'nama_lengkap',
-        'divisi_id',
+        'bidang_id',
         'jabatan',
         'email',
         'nomor_telepon',
@@ -27,8 +27,8 @@ class pegawai extends Model
         'tanggal_masuk',
         'status',
     ];
-    public function divisi(): BelongsTo
+    public function bidang(): BelongsTo
     {
-        return $this->belongsTo(Divisi::class);
+        return $this->belongsTo(bidang::class);
     }
 }

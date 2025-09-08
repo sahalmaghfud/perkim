@@ -13,15 +13,21 @@ return new class extends Migration {
     {
         Schema::create('dokumens', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_dokumen')->unique()->nullable();
             $table->string('judul');
-            $table->string('kategori'); // Contoh: Keuangan, HRD, Teknis
-            $table->string('tipe_dokumen'); // Contoh: SOP, Laporan Bulanan, Kontrak
+            $table->string('kategori');
+            $table->enum('tipe_dokumen', ['dokumen', 'surat']);
+            $table->foreignId('bidang_id')->constrained('bidang')->onDelete('cascade');
+            $table->date('tanggal');
+            $table->string('file_path');
             $table->text('deskripsi')->nullable();
-            $table->date('tanggal_terbit');
-            $table->string('file_path'); // Path ke file dokumen
+
+            $table->string('nomor_surat')->nullable();
+            $table->string('pengirim')->nullable();   // pengirim surat
+            $table->string('penerima')->nullable();   // penerima surat
+            $table->string('perihal')->nullable();    // isi pokok surat
+            $table->integer('lampiran')->nullable();  // jumlah lampiran, jika ada
+            $table->date('tanggal_surat')->nullable(); // tanggal surat dibuat/diterima
             $table->timestamps();
-            $table->foreignId('divisi_id')->constrained('divisis')->onDelete('cascade');
         });
     }
 

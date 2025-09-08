@@ -10,11 +10,11 @@ class PegawaiExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Pegawai::with('divisi')->get()->map(function ($p) {
+        return Pegawai::with('bidang')->get()->map(function ($p) {
             return [
                 'NIP' => $p->nip,
                 'Nama Lengkap' => $p->nama_lengkap,
-                'Divisi' => $p->divisi->nama_divisi ?? 'N/A',
+                'bidang' => $p->bidang->nama_bidang ?? 'N/A',
                 'Jabatan' => $p->jabatan,
                 'Email' => $p->email,
                 'Tanggal Masuk' => $p->tanggal_masuk,
@@ -27,7 +27,7 @@ class PegawaiExport implements FromCollection, WithHeadings
         return [
             'NIP',
             'Nama Lengkap',
-            'Divisi',
+            'bidang',
             'Jabatan',
             'Email',
             'Tanggal Masuk',

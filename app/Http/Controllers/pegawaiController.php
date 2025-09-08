@@ -10,10 +10,7 @@ class pegawaiController extends Controller
 {
     public function index()
     {
-        // Mengambil data pegawai dengan relasi ke divisi
-        // Menggunakan with('divisi') untuk Eager Loading (menghindari N+1 problem)
-        // Menggunakan paginate() untuk membatasi data per halaman
-        $pegawai = Pegawai::with('divisi')->latest()->paginate(10);
+        $pegawai = Pegawai::with('bidang')->latest()->paginate(10);
 
         // Mengirim data pegawai ke view 'pegawai.index'
         return view('pegawai', compact('pegawai'));

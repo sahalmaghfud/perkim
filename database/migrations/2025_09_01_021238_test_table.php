@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('nama_lengkap');
 
             // Menambahkan foreign key ke tabel divisis
-            $table->foreignId('divisi_id')
-                ->constrained('divisis') // merujuk ke tabel 'divisis'
+            $table->foreignId('bidang_id')
+                ->constrained('bidang') // merujuk ke tabel 'divisis'
                 ->onUpdate('cascade') // jika id di tabel divisis berubah, di sini juga berubah
                 ->onDelete('restrict'); // tidak bisa hapus divisi jika masih ada pegawai
 

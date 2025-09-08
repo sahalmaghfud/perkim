@@ -7,22 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 class Dokumen extends Model
 {
     protected $table = 'dokumens';
-    public function divisi()
+    public function bidang()
     {
-        return $this->belongsTo(Divisi::class);
+        return $this->belongsTo(bidang::class);
     }
 
     protected $fillable = [
-        'kode_dokumen',
         'judul',
         'kategori',
         'tipe_dokumen',
         'deskripsi',
-        'tanggal_terbit',
+        'tanggal',          // Diubah dari tanggal_terbit
         'file_path',
-        'divisi_id',
+        'bidang_id',
+        'nomor_surat',
+        'pengirim',
+        'penerima',
+        'perihal',
+        'lampiran',
+        'tanggal_surat',
     ];
 
-    // Relasi ke model Divisi
+    // Relasi ke model bidang
 
 }
