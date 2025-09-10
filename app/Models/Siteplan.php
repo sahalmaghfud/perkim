@@ -46,6 +46,12 @@ class Siteplan extends Model
         'keterangan',
     ];
 
+    protected $casts = [
+        'tanggal_site_plan'  => 'date',
+        'tanggal_bast_adm'   => 'date',
+        'tanggal_bast_fisik' => 'date',
+    ];
+
     /**
      * The attributes that should be cast.
      *
