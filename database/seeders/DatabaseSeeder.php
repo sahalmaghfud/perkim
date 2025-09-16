@@ -11,6 +11,9 @@ use App\Models\bidang;
 use App\Models\Dokumen;
 use App\Models\User;
 use App\Models\Pegawai;
+use App\Models\Pangkat;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -28,7 +31,7 @@ class DatabaseSeeder extends Seeder
             ['nama_bidang' => 'perumahan'],
             ['nama_bidang' => 'permukiman'],
             ['nama_bidang' => 'psu'], // Prasarana, Sarana, dan Utilitas Umum
-            ['nama_bidang' => 'tu'],  // Tata Usaha
+            ['nama_bidang' => 'sekertariat'],  // Tata Usaha
         ];
 
         foreach ($bidangData as $data) {
@@ -52,7 +55,7 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => Hash::make('admin123'),
                 'role' => 'admin',
-                'bidang_slug' => 'tu',
+                'bidang_slug' => 'sekertariat',
             ],
             [
                 'name' => 'User Perumahan',
@@ -90,10 +93,6 @@ class DatabaseSeeder extends Seeder
         }
 
 
-
-        // =================================================================
-        // BAGIAN 3: SEEDING DATA DOKUMEN (DUMMY)
-        // =================================================================
         $dokumens = [];
         $kategoriOptions = ['Keuangan', 'HRD', 'Teknis', 'Umum', 'Pemasaran'];
         $tipeDokumenOptions = ['dokumen', 'surat'];
@@ -170,31 +169,138 @@ class DatabaseSeeder extends Seeder
             $this->command->info('Tidak ada data di tabel bidangs. Silakan jalankan bidangSeeder terlebih dahulu.');
             return;
         }
+        $data = [
+            ['pangkat' => 'Juru Muda', 'golongan' => 'I', 'ruang' => 'a'],
+            ['pangkat' => 'Juru Muda Tingkat I', 'golongan' => 'I', 'ruang' => 'b'],
+            ['pangkat' => 'Juru', 'golongan' => 'I', 'ruang' => 'c'],
+            ['pangkat' => 'Juru Tingkat I', 'golongan' => 'I', 'ruang' => 'd'],
+            ['pangkat' => 'Pengatur Muda', 'golongan' => 'II', 'ruang' => 'a'],
+            ['pangkat' => 'Pengatur Muda Tingkat I', 'golongan' => 'II', 'ruang' => 'b'],
+            ['pangkat' => 'Pengatur', 'golongan' => 'II', 'ruang' => 'c'],
+            ['pangkat' => 'Pengatur Tingkat I', 'golongan' => 'II', 'ruang' => 'd'],
+            ['pangkat' => 'Penata Muda', 'golongan' => 'III', 'ruang' => 'a'],
+            ['pangkat' => 'Penata Muda Tingkat I', 'golongan' => 'III', 'ruang' => 'b'],
+            ['pangkat' => 'Penata', 'golongan' => 'III', 'ruang' => 'c'],
+            ['pangkat' => 'Penata Tingkat I', 'golongan' => 'III', 'ruang' => 'd'],
+            ['pangkat' => 'Pembina', 'golongan' => 'IV', 'ruang' => 'a'],
+            ['pangkat' => 'Pembina Tingkat I', 'golongan' => 'IV', 'ruang' => 'b'],
+            ['pangkat' => 'Pembina Utama Muda', 'golongan' => 'IV', 'ruang' => 'c'],
+            ['pangkat' => 'Pembina Utama Madya', 'golongan' => 'IV', 'ruang' => 'd'],
+            ['pangkat' => 'Pembina Utama', 'golongan' => 'IV', 'ruang' => 'e'],
+        ];
 
-        Pegawai::truncate();
-
-        $faker = Faker::create('id_ID');
-        $jabatan = ['Staff', 'Ketua'];
-        $statusOptions = ['aktif', 'permanen', 'kontrak'];
-
-        foreach (range(1, 20) as $index) {
-            Pegawai::create([
-                'nip' => $faker->unique()->numerify('199#######' . $index),
-                'nama_lengkap' => $faker->name(),
-                'bidang_id' => $faker->randomElement($bidangIds),
-                'jabatan' => $faker->randomElement($jabatan),
-                'email' => $faker->unique()->safeEmail(),
-                'nomor_telepon' => $faker->phoneNumber(),
-                'alamat' => $faker->address(),
-                'tanggal_lahir' => $faker->dateTimeBetween('-30 years', '-20 years')->format('Y-m-d'),
-                'tanggal_masuk' => $faker->dateTimeBetween('-5 years', 'now'),
-                'status' => $faker->randomElement($statusOptions),
-            ]);
+        // Masukkan data ke dalam database
+        foreach ($data as $item) {
+            Pangkat::create($item);
         }
 
-        // =================================================================
-        // SELESAI
-        // =================================================================
+        DB::table('pegawai')->insert([
+            // Data 1: ERIK AHMAD, ST
+            [
+                'bidang_id' => 1, // Asumsi, silakan disesuaikan
+                'pangkat_id' => 11, // Penata - III/c
+                'nama' => 'Erik Ahmad, ST',
+                'nip' => '198205132010011009',
+                'tempat_lahir' => 'Padang', // Asumsi, tidak ada di data
+                'tanggal_lahir' => '1982-05-13', // Diambil dari NIP
+                'jenis_kelamin' => 'L',
+                'foto' => null,
+                'tmt_cpns' => '2010-02-08',
+                'tmt_pangkat' => '2018-04-01',
+                'nama_jabatan' => 'Kasi Survey, Analisa Data Perumahan',
+                'eselon' => 'IV.a',
+                'tmt_jabatan' => '2018-02-15',
+                'nama_diklat' => null,
+                'tahun_diklat' => null,
+                'jumlah_jam_diklat' => null,
+                'pendidikan_terakhir' => 'UNIV. BUNG HATTA',
+                'jurusan' => 'Teknik', // Diambil dari gelar
+                'tahun_lulus' => '2007',
+                'catatan_mutasi' => null,
+                'keterangan' => null,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Data 2: FAISAL, SH
+            [
+                'bidang_id' => 1, // Asumsi, silakan disesuaikan
+                'pangkat_id' => 12, // Penata Tingkat I - III/d
+                'nama' => 'Faisal, SH',
+                'nip' => '198304182008011001',
+                'tempat_lahir' => 'Jambi', // Asumsi, tidak ada di data
+                'tanggal_lahir' => '1983-04-18', // Diambil dari NIP
+                'jenis_kelamin' => 'L',
+                'foto' => null,
+                'tmt_cpns' => '2008-01-01',
+                'tmt_pangkat' => '2018-10-01',
+                'nama_jabatan' => 'Kabid Perumahan dan Permukiman',
+                'eselon' => 'III.b',
+                'tmt_jabatan' => '2021-06-07',
+                'nama_diklat' => 'PIM III',
+                'tahun_diklat' => '2018',
+                'jumlah_jam_diklat' => 893,
+                'pendidikan_terakhir' => 'UNBARI',
+                'jurusan' => 'Ilmu Hukum', // Diambil dari gelar
+                'tahun_lulus' => '2010',
+                'catatan_mutasi' => null,
+                'keterangan' => 'Kesra',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Data 3: INANI, SE
+            [
+                'bidang_id' => 2, // Asumsi, silakan disesuaikan
+                'pangkat_id' => 11, // Penata - III/c
+                'nama' => 'Inani, SE',
+                'nip' => '198101012008012016',
+                'tempat_lahir' => 'Jambi', // Asumsi, tidak ada di data
+                'tanggal_lahir' => '1981-01-01', // Diambil dari NIP
+                'jenis_kelamin' => 'P',
+                'foto' => null,
+                'tmt_cpns' => '2008-01-01',
+                'tmt_pangkat' => '2019-04-01',
+                'nama_jabatan' => 'Kasubag Umum dan Keuangan',
+                'eselon' => 'IV.a',
+                'tmt_jabatan' => '2020-02-07',
+                'nama_diklat' => null,
+                'tahun_diklat' => null,
+                'jumlah_jam_diklat' => null,
+                'pendidikan_terakhir' => 'UNBARI',
+                'jurusan' => 'Ekonomi', // Diambil dari gelar
+                'tahun_lulus' => '2010',
+                'catatan_mutasi' => null,
+                'keterangan' => 'BPKAD',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // Data 4: METTI ARNAWATI, SH
+            [
+                'bidang_id' => 3, // Asumsi, silakan disesuaikan
+                'pangkat_id' => 11, // Penata - III/c
+                'nama' => 'Metti Arnawati, SH',
+                'nip' => '198105152010012001',
+                'tempat_lahir' => 'Jambi', // Asumsi, tidak ada di data
+                'tanggal_lahir' => '1981-05-15', // Diambil dari NIP
+                'jenis_kelamin' => 'P',
+                'foto' => null,
+                'tmt_cpns' => '2010-01-01',
+                'tmt_pangkat' => '2019-04-01',
+                'nama_jabatan' => 'Kasi Sarana dan Prasarana',
+                'eselon' => 'IV.a',
+                'tmt_jabatan' => '2018-02-15',
+                'nama_diklat' => null,
+                'tahun_diklat' => null,
+                'jumlah_jam_diklat' => null,
+                'pendidikan_terakhir' => 'UNIV. JAMBI',
+                'jurusan' => 'Ilmu Hukum', // Diambil dari gelar
+                'tahun_lulus' => '2003',
+                'catatan_mutasi' => null,
+                'keterangan' => null,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
         $this->command->info('Database seeding selesai!');
     }
 }

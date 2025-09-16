@@ -119,7 +119,7 @@ class DokumenController extends Controller
      */
     public function show(Dokumen $dokumen)
     {
-        return view('dokumen.show', compact('dokumen'));
+        return view('pegawai.show', compact('dokumen'));
     }
 
     /**

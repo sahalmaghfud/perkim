@@ -44,11 +44,12 @@ class Siteplan extends Model
         'nomor_bast_fisik',
         'tanggal_bast_fisik',
         'keterangan',
+        'file_path',
     ];
 
     protected $casts = [
-        'tanggal_site_plan'  => 'date',
-        'tanggal_bast_adm'   => 'date',
+        'tanggal_site_plan' => 'date',
+        'tanggal_bast_adm' => 'date',
         'tanggal_bast_fisik' => 'date',
     ];
 

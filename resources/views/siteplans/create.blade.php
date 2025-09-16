@@ -21,7 +21,8 @@
         </div>
     @endif
 
-    <form action="{{ route('siteplans.store') }}" method="POST">
+
+    <form action="{{ route('siteplans.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         @include('siteplans._form', ['siteplan' => new \App\Models\Siteplan()])

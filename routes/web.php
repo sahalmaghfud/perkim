@@ -47,3 +47,21 @@ Route::get('/pegawai/export', [PegawaiController::class, 'export'])->name('pegaw
 
 Route::get('/siteplans/export/new', [SiteplanController::class, 'export'])->name('siteplans.export');
 Route::post('/siteplans/import', [SiteplanController::class, 'import'])->name('siteplans.import');
+
+
+
+Route::resource('pegawai', PegawaiController::class);
+
+
+// Route untuk menyimpan dokumen baru (nested di bawah pegawai)
+// URL: POST /pegawai/{pegawai}/dokumen
+Route::post('/pegawai/{pegawai}/dokumen', [PegawaiController::class, 'dokumenStore'])->name('pegawai.dokumen.store');
+
+// Route untuk menampilkan/mengunduh file dokumen
+// URL: GET /dokumen/{dokumen}
+Route::get('/pegawai/dokumen/{dokumen}', [PegawaiController::class, 'dokumenShow'])->name('pegawai.dokumen.show');
+
+// Route untuk menghapus dokumen (ini adalah perbaikan penting)
+// Menggunakan nested route agar lebih aman dan sesuai dengan parameter di controller
+// URL: DELETE /pegawai/{pegawai}/dokumen/{dokumen}
+Route::delete('/pegawai/dokumen/{dokumen}', [PegawaiController::class, 'dokumenDestroy'])->name('pegawai.dokumen.destroy');

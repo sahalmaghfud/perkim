@@ -2,33 +2,87 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
-class pegawai extends Model
+class Pegawai extends Model
 {
+    use HasFactory;
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'pegawai';
 
     /**
-     * Atribut yang dapat diisi secara massal (mass assignable).
+     * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'nip',
-        'nama_lengkap',
         'bidang_id',
-        'jabatan',
-        'email',
-        'nomor_telepon',
-        'alamat',
-        'tanggal_lahir',
-        'tanggal_masuk',
-        'status',
+        'pangkat_id',
+        'nama',
+        'nip',
+        'golongan',
+        'foto',
+        'tmt_cpns',
+        'tmt_pangkat',
+        'nama_jabatan',
+        'eselon',
+        'tmt_jabatan',
+        'nama_diklat',
+        'tahun_diklat',
+        'jumlah_jam_diklat',
+        'pendidikan_terakhir',
+        'jurusan',
+        'tahun_lulus',
+        'jenis_kelamin',
+        'usia',
+        'catatan_mutasi',
+        'keterangan',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'tmt_cpns' => 'date',
+        'tmt_pangkat' => 'date',
+        'tmt_jabatan' => 'date',
+        'tahun_diklat' => 'integer',
+        'tahun_lulus' => 'integer',
+        'jumlah_jam_diklat' => 'integer',
+    ];
+
+    /**
+     * Get the bidang that owns the pegawai.
+     * Asumsi ada model Bidang.
+     */
     public function bidang(): BelongsTo
     {
-        return $this->belongsTo(bidang::class);
+        return $this->belongsTo(Bidang::class);
+    }
+
+    /**
+     * Get the pangkat that owns the pegawai.
+     */
+    public function pangkat(): BelongsTo
+    {
+        return $this->belongsTo(Pangkat::class);
+    }
+
+    /**
+     * Get the dokumen for the pegawai.
+     */
+    public function dokumenPegawai(): HasMany
+    {
+        return $this->hasMany(DokumenPegawai::class);
     }
 }

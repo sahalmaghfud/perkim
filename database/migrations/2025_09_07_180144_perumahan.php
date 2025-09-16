@@ -42,6 +42,7 @@ return new class extends Migration {
             $table->date('tanggal_bast_adm')->nullable();
             $table->string('nomor_bast_fisik')->nullable();
             $table->date('tanggal_bast_fisik')->nullable();
+            $table->string('file_path')->nullable();
             $table->string('keterangan')->nullable();
             $table->timestamps();
         });

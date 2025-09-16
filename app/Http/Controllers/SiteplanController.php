@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\SiteplanImport;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 
 // Import Rule class
@@ -68,12 +70,24 @@ class SiteplanController extends Controller
             'nomor_bast_fisik' => 'nullable|string|max:255',
             'tanggal_bast_fisik' => 'nullable|date',
             'keterangan' => 'nullable|string',
+            'file_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
         ];
 
         // Menjalankan validasi
         $validatedData = $request->validate($rules);
 
-        // Membuat data baru
+        // --- Proses Upload File ---
+        if ($request->hasFile('file_path')) {
+            $file = $request->file('file_path');
+            $namaPerumahan = $request->input('nama');
+            // Membuat nama file yang aman dari nama perumahan + timestamp agar unik
+            $fileName = Str::slug($namaPerumahan) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            // Simpan file dengan nama baru
+            $path = $file->storeAs('siteplans', $fileName, 'public');
+            $validatedData['file_path'] = $path;
+        }
+
+        // Membuat data baru dengan data yang sudah divalidasi (termasuk path file jika ada)
         Siteplan::create($validatedData);
 
         return redirect()->route('siteplans.index')
@@ -125,7 +139,6 @@ class SiteplanController extends Controller
             'alamat' => 'nullable|string',
             'kecamatan' => 'nullable|string|max:255',
             'desa' => 'nullable|string|max:255',
-            // Aturan unique di sini mengabaikan data yang sedang diedit
             'nomor_site_plan' => ['nullable', 'string', 'max:255', Rule::unique('siteplans')->ignore($siteplan->id)],
             'tanggal_site_plan' => 'nullable|date',
             'nomor_bast_adm' => 'nullable|string|max:255',
@@ -133,10 +146,30 @@ class SiteplanController extends Controller
             'nomor_bast_fisik' => 'nullable|string|max:255',
             'tanggal_bast_fisik' => 'nullable|date',
             'keterangan' => 'nullable|string',
+            // Aturan validasi untuk file
+            'file_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
         ];
 
         // Menjalankan validasi
         $validatedData = $request->validate($rules);
+
+        // --- Proses Upload File Baru (jika ada) ---
+        if ($request->hasFile('file_path')) {
+            // 1. Hapus file lama jika ada
+            if ($siteplan->file_path) {
+                Storage::disk('public')->delete($siteplan->file_path);
+            }
+
+            // 2. Simpan file baru dengan nama kustom
+            $file = $request->file('file_path');
+            $namaPerumahan = $request->input('nama');
+            // Membuat nama file yang aman dari nama perumahan + timestamp agar unik
+            $fileName = Str::slug($namaPerumahan) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            // Simpan file dengan nama baru
+            $path = $file->storeAs('siteplans', $fileName, 'public');
+            $validatedData['file_path'] = $path;
+        }
+
 
         // Memperbarui data yang ada
         $siteplan->update($validatedData);
@@ -150,6 +183,11 @@ class SiteplanController extends Controller
      */
     public function destroy(Siteplan $siteplan)
     {
+        // Hapus file dari storage jika ada sebelum menghapus data dari database
+        if ($siteplan->file_path) {
+            Storage::disk('public')->delete($siteplan->file_path);
+        }
+
         $siteplan->delete();
 
         return redirect()->route('siteplans.index')
