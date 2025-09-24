@@ -99,7 +99,6 @@ class PegawaiController extends Controller
      */
     public function update(Request $request, Pegawai $pegawai)
     {
-        dd($request);
         $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
             'nip' => ['required', 'string', 'max:25', Rule::unique('pegawai')->ignore($pegawai->id)],

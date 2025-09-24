@@ -65,3 +65,6 @@ Route::get('/pegawai/dokumen/{dokumen}', [PegawaiController::class, 'dokumenShow
 // Menggunakan nested route agar lebih aman dan sesuai dengan parameter di controller
 // URL: DELETE /pegawai/{pegawai}/dokumen/{dokumen}
 Route::delete('/pegawai/dokumen/{dokumen}', [PegawaiController::class, 'dokumenDestroy'])->name('pegawai.dokumen.destroy');
+
+Route::get('siteplans-export', [SiteplanController::class, 'export'])->name('siteplans.export');   // Route untuk Export
+

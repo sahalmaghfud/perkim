@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-800 border-b pb-4 mb-6">
+        <h3 class="text-lg font-semibold text-white border-b pb-4 mb-6">
             Formulir Dokumen Baru
         </h3>
 

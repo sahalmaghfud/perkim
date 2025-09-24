@@ -4,9 +4,9 @@ namespace App\Imports;
 
 use App\Models\Siteplan;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\ToModel;
 
 class SiteplanImport implements ToModel, WithHeadingRow, WithValidation
 {
@@ -17,6 +17,20 @@ class SiteplanImport implements ToModel, WithHeadingRow, WithValidation
      */
     public function model(array $row)
     {
+        // 1. Ambil nomor site plan dari baris saat ini.
+        $nomorSitePlan = $row['nomor_site_plan'] ?? null;
+
+        // 2. Jika nomor site plan tidak kosong, cek apakah sudah ada di database.
+        if ($nomorSitePlan) {
+            $exists = Siteplan::where('nomor_site_plan', $nomorSitePlan)->exists();
+
+            // 3. Jika sudah ada, kembalikan null untuk melewatkan baris ini.
+            if ($exists) {
+                return null; // <-- Baris ini akan dilewati dan tidak diimpor
+            }
+        }
+
+        // 4. Jika tidak ada (atau nomor site plan kosong), buat model baru dan impor datanya.
         return new Siteplan([
             'nama' => $row['nama'] ?? null,
             'tipe' => $row['tipe'] ?? null,
@@ -40,7 +54,7 @@ class SiteplanImport implements ToModel, WithHeadingRow, WithValidation
             'alamat' => $row['alamat_jalanrtrw'] ?? null,
             'kecamatan' => $row['kecamatan'] ?? null,
             'desa' => $row['desa'] ?? null,
-            'nomor_site_plan' => $row['nomor_site_plan'] ?? null,
+            'nomor_site_plan' => $nomorSitePlan,
             'tanggal_site_plan' => $this->transformDate($row['tanggal_site_plan'] ?? null),
             'nomor_bast_adm' => $row['nomor_bast_adm'] ?? null,
             'tanggal_bast_adm' => $this->transformDate($row['tanggal_bast_adm'] ?? null),
@@ -62,15 +76,13 @@ class SiteplanImport implements ToModel, WithHeadingRow, WithValidation
             return null;
         }
 
-        // Coba parsing jika formatnya sudah Y-m-d atau d-m-Y
         try {
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
-            // Jika gagal, anggap itu adalah serial number Excel dan konversi
             try {
                 return Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value))->format('Y-m-d');
             } catch (\Exception $e) {
-                return null; // Kembalikan null jika konversi tetap gagal
+                return null;
             }
         }
     }
@@ -80,11 +92,11 @@ class SiteplanImport implements ToModel, WithHeadingRow, WithValidation
      */
     public function rules(): array
     {
-        // Menambahkan aturan validasi dasar
+        // Hapus aturan 'unique' dari sini agar tidak menghentikan proses
         return [
             '*.nama' => 'required',
             '*.nama_pt' => 'required',
-            '*.nomor_site_plan' => 'nullable|unique:siteplans,nomor_site_plan',
+            // '*.nomor_site_plan' => 'nullable|unique:siteplans,nomor_site_plan', <-- HAPUS ATAU KOMENTARI BARIS INI
         ];
     }
 }

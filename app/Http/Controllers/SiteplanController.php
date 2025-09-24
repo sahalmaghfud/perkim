@@ -19,11 +19,64 @@ class SiteplanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+
+    public function index(Request $request)
     {
-        // Mengambil data terbaru dengan paginasi 10 item per halaman
-        $siteplans = Siteplan::latest()->paginate(10);
-        return view('siteplans.index', compact('siteplans'));
+        // 1. Ambil data untuk mengisi filter dropdown (tetap sama)
+        $kecamatans = Siteplan::select('kecamatan')->whereNotNull('kecamatan')->distinct()->orderBy('kecamatan')->get();
+        $desas = Siteplan::select('desa')->whereNotNull('desa')->distinct()->orderBy('desa')->get();
+        $namaPts = Siteplan::select('nama_pt')->whereNotNull('nama_pt')->distinct()->orderBy('nama_pt')->get();
+
+        // 2. Mulai query dan terapkan filter berdasarkan request URL
+        $query = Siteplan::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")->orWhere('nama_pt', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('kecamatan'))
+            $query->where('kecamatan', $request->input('kecamatan'));
+        if ($request->filled('desa'))
+            $query->where('desa', $request->input('desa'));
+        if ($request->filled('nama_pt'))
+            $query->where('nama_pt', $request->input('nama_pt'));
+        if ($request->filled('keterangan'))
+            $query->where('keterangan', $request->input('keterangan'));
+        if ($request->filled('start_date'))
+            $query->where('tanggal_site_plan', '>=', $request->input('start_date'));
+        if ($request->filled('end_date'))
+            $query->where('tanggal_site_plan', '<=', $request->input('end_date'));
+
+        // 3. Eksekusi query dengan paginasi
+        $siteplans = $query->latest()->paginate(15);
+
+        // 4. Kirim semua data (hasil filter & data dropdown) ke view
+        return view('siteplans.index', compact('siteplans', 'kecamatans', 'desas', 'namaPts'));
+    }
+
+    /**
+     * Method BARU untuk menangani filter AJAX.
+     * Mengembalikan data dalam format JSON.
+     */
+
+
+    /**
+     * Method export tidak perlu diubah, karena sudah menerima parameter dari constructor.
+     */
+    public function export(Request $request)
+    {
+        // 1. Ambil SEMUA parameter filter dari URL (search, kecamatan, dll.)
+        // dan simpan dalam bentuk array.
+        $filters = $request->all();
+
+        // 2. Siapkan nama file
+        $fileName = 'data_siteplan_' . now()->format('Y-m-d') . '.xlsx';
+
+        // 3. Panggil class export dan kirimkan array $filters ke dalamnya.
+        // Ini adalah langkah PENTING yang menghubungkan controller dengan class export.
+        return Excel::download(new SiteplanExport($filters), $fileName);
     }
 
     /**
@@ -198,10 +251,7 @@ class SiteplanController extends Controller
     /**
      * Export data to Excel.
      */
-    public function export()
-    {
-        return Excel::download(new SiteplanExport, 'siteplans.xlsx');
-    }
+
 
     /**
      * Import data from Excel.
@@ -220,9 +270,12 @@ class SiteplanController extends Controller
             foreach ($failures as $failure) {
                 $errorMessages[] = "Baris " . $failure->row() . ": " . implode(", ", $failure->errors());
             }
-            return back()->with('error', 'Gagal mengimpor data: ' . implode("; ", $errorMessages));
+            // Diubah dari back() ke redirect()->route()
+            dd($errorMessages);
+            return redirect()->route('siteplans.index')->with('error', 'Gagal mengimpor data: ' . implode("; ", $errorMessages));
         }
 
-        return back()->with('success', 'Data siteplan berhasil diimpor!');
+        // Diubah dari back() ke redirect()->route()
+        return redirect()->route('siteplans.index')->with('success', 'Data siteplan berhasil diimpor!');
     }
 }
