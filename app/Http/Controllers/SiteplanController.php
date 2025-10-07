@@ -92,7 +92,6 @@ class SiteplanController extends Controller
      */
     public function store(Request $request)
     {
-        // Menentukan aturan validasi untuk semua field
         $rules = [
             'nama' => 'required|string|max:255',
             'tipe' => 'required|string|max:255',

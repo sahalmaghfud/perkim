@@ -1,129 +1,157 @@
 {{-- Menampilkan error validasi jika ada --}}
 @if ($errors->any())
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md shadow-sm" role="alert">
-        <p class="font-bold">Terjadi Kesalahan:</p>
-        <ul class="mt-2 list-disc list-inside text-sm">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 mb-6 rounded-lg shadow-sm" role="alert">
+        <div class="flex">
+            <div class="py-1"><i class="fas fa-exclamation-triangle mr-3 text-red-500"></i></div>
+            <div>
+                <p class="font-bold">Terjadi Kesalahan</p>
+                <ul class="mt-1 list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
     </div>
 @endif
 
+<h3 class="text-xl font-semibold text-midnight_green border-b border-slate-200 pb-4 mb-6">
+    Informasi Dasar
+</h3>
+
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
-        <label for="judul" class="block text-sm font-medium text-gray-700">Judul Dokumen</label>
+        <label for="judul" class="block text-sm font-medium text-slate-700">Judul Dokumen</label>
         <input type="text" id="judul" name="judul" value="{{ old('judul', $dokumen->judul ?? '') }}" required
-            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
     </div>
     <div>
-        {{-- [PENYESUAIAN] Mengganti 'tanggal_terbit' menjadi 'tanggal' --}}
-        <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal Terbit/Diterima</label>
+        <label for="tanggal" class="block text-sm font-medium text-slate-700">Tanggal Terbit/Diterima</label>
         <input type="date" id="tanggal" name="tanggal"
             value="{{ old('tanggal', isset($dokumen) ? \Carbon\Carbon::parse($dokumen->tanggal)->format('Y-m-d') : now()->format('Y-m-d')) }}"
             required
-            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
     </div>
-</div>
+    <div>
+        <label for="bidang_id" class="block text-sm font-medium text-slate-700">Bidang Terkait</label>
+        {{-- Cek apakah pengguna adalah admin --}}
+        @if (Auth::check() && Auth::user()->role == 'admin')
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-    <div>
-        {{-- [PENYESUAIAN] Mengganti 'divisi' menjadi 'bidang' --}}
-        <label for="bidang_id" class="block text-sm font-medium text-gray-700">Bidang Terkait</label>
-        <select id="bidang_id" name="bidang_id" required
-            class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            @foreach ($bidangList as $bidang)
-                <option value="{{ $bidang->id }}"
-                    {{ old('bidang_id', $dokumen->bidang_id ?? '') == $bidang->id ? 'selected' : '' }}>
-                    {{ $bidang->nama_bidang }}
-                </option>
-            @endforeach
-        </select>
+            {{-- JIKA ADMIN: Tampilkan dropdown untuk memilih bidang secara bebas --}}
+            <select id="bidang_id" name="bidang_id" required
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Bidang --</option>
+                @foreach ($bidangList as $bidang)
+                    <option value="{{ $bidang->id }}" {{-- Logika untuk menangani data lama atau data yang sedang diedit --}}
+                        {{ old('bidang_id', $dokumen->bidang_id ?? '') == $bidang->id ? 'selected' : '' }}>
+                        {{ $bidang->nama_bidang }}
+                    </option>
+                @endforeach
+            </select>
+        @else
+            {{-- JIKA BUKAN ADMIN: Kunci pilihan ke bidang milik user --}}
+            <div>
+                {{-- 1. Tampilkan select box yang nonaktif untuk antarmuka (UI) --}}
+                <select disabled
+                    class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-slate-100 rounded-lg shadow-sm sm:text-sm cursor-not-allowed">
+                    {{-- Asumsi: Model User memiliki relasi 'bidang' untuk mendapatkan nama --}}
+                    <option>{{ Auth::user()->bidang->nama_bidang ?? 'Bidang tidak terdefinisi' }}</option>
+                </select>
+                <input type="hidden" name="bidang_id" value="{{ Auth::user()->bidang_id }}">
+            </div>
+
+        @endif
     </div>
     <div>
-        <label for="kategori" class="block text-sm font-medium text-gray-700">Kategori</label>
-        {{-- Anda bisa membuat ini dinamis jika diperlukan --}}
+        <label for="kategori" class="block text-sm font-medium text-slate-700">Kategori</label>
         <input type="text" id="kategori" name="kategori" value="{{ old('kategori', $dokumen->kategori ?? '') }}"
             required placeholder="Contoh: Keuangan, Teknis, Undangan"
-            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
     </div>
 </div>
 
 <div class="mt-6">
-    <label for="deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi (Opsional)</label>
+    <label for="deskripsi" class="block text-sm font-medium text-slate-700">Deskripsi (Opsional)</label>
     <textarea id="deskripsi" name="deskripsi" rows="3"
-        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ old('deskripsi', $dokumen->deskripsi ?? '') }}</textarea>
+        class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">{{ old('deskripsi', $dokumen->deskripsi ?? '') }}</textarea>
 </div>
 
-{{-- ====================================================================== --}}
-{{-- BAGIAN TIPE DOKUMEN & FORM SURAT (DINAMIS) --}}
-{{-- ====================================================================== --}}
-<div class="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-            {{-- [PENYESUAIAN] Opsi 'tipe_dokumen' disesuaikan dengan enum database --}}
-            <label for="tipe_dokumen" class="block text-sm font-medium text-gray-700">Tipe Dokumen</label>
-            <select id="tipe_dokumen" name="tipe_dokumen" required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                <option value="dokumen"
-                    {{ old('tipe_dokumen', $dokumen->tipe_dokumen ?? 'dokumen') == 'dokumen' ? 'selected' : '' }}>
-                    Dokumen Internal</option>
-                <option value="surat"
-                    {{ old('tipe_dokumen', $dokumen->tipe_dokumen ?? '') == 'surat' ? 'selected' : '' }}>
-                    Surat</option>
-            </select>
-        </div>
-        <div>
-            <label for="file_dokumen" class="block text-sm font-medium text-gray-700">File Dokumen</label>
-            <input type="file" id="file_dokumen" name="file_dokumen" {{ isset($dokumen) ? '' : 'required' }}
-                class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-50 focus:outline-none file:bg-gray-200 file:text-gray-700 file:border-0 file:px-4 file:py-2">
-            @if (isset($dokumen) && $dokumen->file_path)
-                <p class="mt-2 text-sm text-gray-600">File saat ini: <a href="{{ Storage::url($dokumen->file_path) }}"
-                        target="_blank" class="text-indigo-600 hover:text-indigo-900">Lihat File</a></p>
-                <small class="text-xs text-gray-500">Kosongkan jika tidak ingin mengubah file.</small>
-            @endif
-        </div>
-    </div>
 
-    {{-- [BARU] Form tambahan yang hanya muncul jika tipe "Surat" dipilih --}}
-    <div id="form-surat-fields" class="mt-6 border-t border-gray-300 pt-6" style="display: none;">
-        <h4 class="text-md font-semibold text-gray-800 mb-4">Detail Surat</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+{{-- PENGATURAN TIPE DOKUMEN & FILE --}}
+<div class="mt-8 pt-6 border-t border-slate-200">
+    <h3 class="text-xl font-semibold text-midnight_green mb-6">
+        Pengaturan Dokumen & File
+    </h3>
+    <div class="p-6 border border-slate-200 rounded-lg bg-slate-50">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label for="nomor_surat" class="block text-sm font-medium text-gray-700">Nomor Surat</label>
-                <input type="text" name="nomor_surat" id="nomor_surat"
-                    value="{{ old('nomor_surat', $dokumen->nomor_surat ?? '') }}"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm">
+                <label for="tipe_dokumen" class="block text-sm font-medium text-slate-700">Tipe Dokumen</label>
+                <select id="tipe_dokumen" name="tipe_dokumen" required
+                    class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                    <option value="dokumen"
+                        {{ old('tipe_dokumen', $dokumen->tipe_dokumen ?? 'dokumen') == 'dokumen' ? 'selected' : '' }}>
+                        Dokumen Internal
+                    </option>
+                    <option value="surat"
+                        {{ old('tipe_dokumen', $dokumen->tipe_dokumen ?? '') == 'surat' ? 'selected' : '' }}>
+                        Surat
+                    </option>
+                </select>
             </div>
             <div>
-                <label for="tanggal_surat" class="block text-sm font-medium text-gray-700">Tanggal Surat</label>
-                <input type="date" name="tanggal_surat" id="tanggal_surat"
-                    value="{{ old('tanggal_surat', isset($dokumen->tanggal_surat) ? \Carbon\Carbon::parse($dokumen->tanggal_surat)->format('Y-m-d') : '') }}"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm">
+                <label for="file_dokumen" class="block text-sm font-medium text-slate-700">Upload File</label>
+                <input type="file" id="file_dokumen" name="file_dokumen" {{ isset($dokumen) ? '' : 'required' }}
+                    class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
+                @if (isset($dokumen) && $dokumen->file_path)
+                    <p class="mt-2 text-sm text-slate-600">File saat ini: <a
+                            href="{{ Storage::url($dokumen->file_path) }}" target="_blank"
+                            class="font-semibold text-midnight_green hover:underline">Lihat File</a>
+                    </p>
+                    <small class="text-xs text-slate-500">Kosongkan jika tidak ingin mengubah file.</small>
+                @endif
             </div>
-            <div>
-                <label for="lampiran" class="block text-sm font-medium text-gray-700">Jumlah Lampiran</label>
-                <input type="number" name="lampiran" id="lampiran"
-                    value="{{ old('lampiran', $dokumen->lampiran ?? '0') }}"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm">
-            </div>
-            <div class="lg:col-span-3">
-                <label for="perihal" class="block text-sm font-medium text-gray-700">Perihal</label>
-                <input type="text" name="perihal" id="perihal"
-                    value="{{ old('perihal', $dokumen->perihal ?? '') }}"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm">
-            </div>
-            <div>
-                <label for="pengirim" class="block text-sm font-medium text-gray-700">Pengirim</label>
-                <input type="text" name="pengirim" id="pengirim"
-                    value="{{ old('pengirim', $dokumen->pengirim ?? '') }}"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm">
-            </div>
-            <div>
-                <label for="penerima" class="block text-sm font-medium text-gray-700">Penerima</label>
-                <input type="text" name="penerima" id="penerima"
-                    value="{{ old('penerima', $dokumen->penerima ?? '') }}"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm">
+        </div>
+
+        {{-- Form tambahan yang hanya muncul jika tipe "Surat" dipilih --}}
+        <div id="form-surat-fields" class="mt-6 border-t border-slate-300 pt-6" style="display: none;">
+            <h4 class="text-md font-semibold text-slate-800 mb-4">Detail Surat</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                    <label for="nomor_surat" class="block text-sm font-medium text-slate-700">Nomor Surat</label>
+                    <input type="text" name="nomor_surat" id="nomor_surat"
+                        value="{{ old('nomor_surat', $dokumen->nomor_surat ?? '') }}"
+                        class="mt-1 block w-full border-slate-300 rounded-lg shadow-sm sm:text-sm">
+                </div>
+                <div>
+                    <label for="tanggal_surat" class="block text-sm font-medium text-slate-700">Tanggal Surat</label>
+                    <input type="date" name="tanggal_surat" id="tanggal_surat"
+                        value="{{ old('tanggal_surat', isset($dokumen->tanggal_surat) ? \Carbon\Carbon::parse($dokumen->tanggal_surat)->format('Y-m-d') : '') }}"
+                        class="mt-1 block w-full border-slate-300 rounded-lg shadow-sm sm:text-sm">
+                </div>
+                <div>
+                    <label for="lampiran" class="block text-sm font-medium text-slate-700">Jml Lampiran</label>
+                    <input type="number" name="lampiran" id="lampiran"
+                        value="{{ old('lampiran', $dokumen->lampiran ?? '0') }}"
+                        class="mt-1 block w-full border-slate-300 rounded-lg shadow-sm sm:text-sm">
+                </div>
+                <div class="lg:col-span-3">
+                    <label for="perihal" class="block text-sm font-medium text-slate-700">Perihal</label>
+                    <input type="text" name="perihal" id="perihal"
+                        value="{{ old('perihal', $dokumen->perihal ?? '') }}"
+                        class="mt-1 block w-full border-slate-300 rounded-lg shadow-sm sm:text-sm">
+                </div>
+                <div>
+                    <label for="pengirim" class="block text-sm font-medium text-slate-700">Pengirim</label>
+                    <input type="text" name="pengirim" id="pengirim"
+                        value="{{ old('pengirim', $dokumen->pengirim ?? '') }}"
+                        class="mt-1 block w-full border-slate-300 rounded-lg shadow-sm sm:text-sm">
+                </div>
+                <div>
+                    <label for="penerima" class="block text-sm font-medium text-slate-700">Penerima</label>
+                    <input type="text" name="penerima" id="penerima"
+                        value="{{ old('penerima', $dokumen->penerima ?? '') }}"
+                        class="mt-1 block w-full border-slate-300 rounded-lg shadow-sm sm:text-sm">
+                </div>
             </div>
         </div>
     </div>
@@ -131,18 +159,19 @@
 
 
 {{-- Tombol Aksi --}}
-<div class="flex items-center justify-end mt-8 gap-4">
-    <a href="{{ route('dokumen.index') }}"
+<div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-200 gap-4">
+    <button type="button" onclick="history.back()"
         class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
-        Batal
-    </a>
+        Kembali
+    </button>
     <button type="submit"
-        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+        class="inline-flex items-center justify-center px-6 py-2.5 bg-midnight_green-500 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest shadow-md hover:bg-midnight_green-600">
+        <i class="fas fa-save mr-2"></i>
         {{ isset($dokumen) ? 'Update Data' : 'Simpan Data' }}
     </button>
 </div>
 
-
+{{-- Script sekarang diletakkan di sini menggunakan @push --}}
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -157,7 +186,7 @@
                 }
             }
 
-            // Jalankan fungsi saat halaman dimuat (untuk form edit)
+            // Jalankan fungsi saat halaman dimuat
             toggleSuratFields();
 
             // Jalankan fungsi setiap kali pilihan berubah

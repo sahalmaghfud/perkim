@@ -42,9 +42,11 @@ class Pegawai extends Model
         'jurusan',
         'tahun_lulus',
         'jenis_kelamin',
-        'usia',
+        'tempat_lahir',
+        'tanggal_lahir',
         'catatan_mutasi',
         'keterangan',
+        'nama_univ',
     ];
 
     /**
@@ -52,14 +54,14 @@ class Pegawai extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'tmt_cpns' => 'date',
-        'tmt_pangkat' => 'date',
-        'tmt_jabatan' => 'date',
-        'tahun_diklat' => 'integer',
-        'tahun_lulus' => 'integer',
-        'jumlah_jam_diklat' => 'integer',
-    ];
+    // protected $casts = [
+    //     'tmt_cpns' => 'date',
+    //     'tmt_pangkat' => 'date',
+    //     'tmt_jabatan' => 'date',
+    //     'tahun_diklat' => 'integer',
+    //     'tahun_lulus' => 'integer',
+    //     'jumlah_jam_diklat' => 'integer',
+    // ];
 
     /**
      * Get the bidang that owns the pegawai.

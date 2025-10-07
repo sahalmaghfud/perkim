@@ -1,143 +1,295 @@
-@extends('layouts.app') {{-- Pastikan ini sesuai dengan layout utama Anda --}}
+@extends('layouts.app')
+
+{{-- Menambahkan style khusus untuk animasi modal agar lebih halus --}}
+@push('styles')
+    <style>
+        #document-modal {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #modal-content {
+            transform: scale(0.95);
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Style untuk hover pada icon di detail list */
+        .detail-item-icon {
+            color: #6B7280;
+            /* text-gray-500 default */
+            transition: color 0.2s ease-in-out;
+        }
+
+        .detail-item:hover .detail-item-icon {
+            color: #FBBF24;
+            /* text-yellow-500 on hover */
+        }
+    </style>
+@endpush
+
 
 @section('content')
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {{-- Header Halaman --}}
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Detail Pegawai</h1>
-                <p class="mt-1 text-sm text-gray-500">Informasi lengkap dan dokumen terkait untuk {{ $pegawai->nama }}.</p>
+        <div class="relative bg-gradient-midnight-green text-white rounded-2xl shadow-xl p-6 md:p-8 overflow-hidden mb-8">
+            <i
+                class="fas fa-user-tie absolute -right-8 -bottom-12 text-midnight_green-400/30 text-9xl transform rotate-[-15deg]"></i>
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight">{{ $pegawai->nama }}</h1>
+                    <p class="mt-1 text-midnight_green-900/80">Detail informasi dan dokumen kepegawaian.</p>
+                </div>
+                <a href="{{ route('pegawai.index') }}"
+                    class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-ecru-900/60 border border-transparent rounded-lg font-semibold text-xs text-midnight_green-100 uppercase tracking-widest hover:bg-ecru-900/80 transition-all ease-in-out duration-150 whitespace-nowrap shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
             </div>
-            <a href="{{ route('pegawai.index') }}"
-                class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                &larr; &nbsp; Kembali ke Daftar
-            </a>
         </div>
+
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
             {{-- Kolom Kiri: Detail Informasi Pegawai --}}
-            <div class="lg:col-span-2">
-                <div class="bg-white shadow-lg rounded-xl overflow-hidden">
+            <div class="lg:col-span-2 space-y-8">
+                {{-- Kartu Profil Utama --}}
+                <div class="bg-white/70 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden">
                     <div class="md:flex">
-                        <div class="md:flex-shrink-0 p-8 bg-gray-50 flex items-center justify-center">
-                            <img class="h-40 w-40 rounded-full object-cover ring-4 ring-indigo-200"
+                        <div class="md:flex-shrink-0 p-6 flex items-center justify-center">
+                            <img class="h-40 w-40 rounded-full object-cover ring-4 ring-offset-4 ring-offset-white/70 ring-ecru"
                                 src="{{ $pegawai->foto ? Storage::url($pegawai->foto) : 'https://placehold.co/192x192/e2e8f0/718096?text=Foto' }}"
                                 alt="Foto {{ $pegawai->nama }}">
                         </div>
-                        <div class="p-8 flex-grow">
-                            <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
-                                {{ $pegawai->nama_jabatan ?? 'Jabatan Belum Diatur' }}</div>
-                            <h2 class="block mt-1 text-3xl leading-tight font-extrabold text-gray-900">{{ $pegawai->nama }}
+                        <div class="p-6 flex flex-col justify-center">
+                            <div class="uppercase tracking-wide text-sm text-ecru-300 font-bold">
+                                {{ $pegawai->nama_jabatan ?? 'Jabatan Belum Diatur' }}
+                            </div>
+                            <h2 class="block mt-1 text-3xl leading-tight font-extrabold text-midnight_green">
+                                {{ $pegawai->nama }}
                             </h2>
-                            <p class="mt-2 text-gray-600">NIP: {{ $pegawai->nip }}</p>
+                            <p class="mt-2 text-midnight_green-400">NIP: {{ $pegawai->nip }}</p>
+                            <p class="mt-1 text-midnight_green-400">Bidang: {{ $pegawai->bidang->nama_bidang }}</p>
                         </div>
                     </div>
+                </div>
 
-                    {{-- Detail Tambahan --}}
-                    <div class="border-t border-gray-200 px-8 py-6">
-                        <dl class="divide-y divide-gray-200">
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-gray-500">Pangkat/Golongan</dt>
-                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    {{ $pegawai->pangkat->pangkat }}
-                                    ({{ $pegawai->pangkat->golongan }}/{{ $pegawai->pangkat->ruang }})</dd>
-                            </div>
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-gray-500">Bidang</dt>
-                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    {{ $pegawai->bidang->nama_bidang }}</dd>
-                            </div>
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-gray-500">TMT CPNS</dt>
-                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    {{ \Carbon\Carbon::parse($pegawai->tmt_cpns)->isoFormat('D MMMM Y') }}</dd>
-                            </div>
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-gray-500">TMT Pangkat</dt>
-                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    {{ \Carbon\Carbon::parse($pegawai->tmt_pangkat)->isoFormat('D MMMM Y') }}</dd>
-                            </div>
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-gray-500">Pendidikan Terakhir</dt>
-                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    {{ $pegawai->pendidikan_terakhir }} - {{ $pegawai->jurusan }}
-                                    ({{ $pegawai->tahun_lulus }})</dd>
-                            </div>
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-gray-500">Usia</dt>
-                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $pegawai->usia }} Tahun
+                {{-- Kartu Detail Tambahan --}}
+                <div class="bg-white/70 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-midnight_green mb-6 pb-3 border-b border-midnight_green/10">Data
+                        Kepegawaian</h3>
+                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-id-badge mr-2 detail-item-icon"></i>Pangkat/Golongan
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->pangkat->pangkat }}
+                                ({{ $pegawai->pangkat->golongan }}/{{ $pegawai->pangkat->ruang }})
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-user-tag mr-2 detail-item-icon"></i>Eselon
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->eselon ?? '-' }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 detail-item-icon"></i>TMT CPNS
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ \Carbon\Carbon::parse($pegawai->tmt_cpns)->isoFormat('D MMMM Y') }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-calendar-check mr-2 detail-item-icon"></i>TMT Pangkat
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ \Carbon\Carbon::parse($pegawai->tmt_pangkat)->isoFormat('D MMMM Y') }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-calendar-days mr-2 detail-item-icon"></i>TMT Jabatan
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->tmt_jabatan ? \Carbon\Carbon::parse($pegawai->tmt_jabatan)->isoFormat('D MMMM Y') : '-' }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-venus-mars mr-2 detail-item-icon"></i>Jenis Kelamin
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-cake-candles mr-2 detail-item-icon"></i>Tempat, Tanggal Lahir
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->tempat_lahir }},
+                                {{ \Carbon\Carbon::parse($pegawai->tanggal_lahir)->isoFormat('D MMMM Y') }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-hourglass-half mr-2 detail-item-icon"></i>Usia
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">{{ $pegawai->usia }} Tahun
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                {{-- Kartu Pendidikan --}}
+                <div class="bg-white/70 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-midnight_green mb-6 pb-3 border-b border-midnight_green/10">Riwayat
+                        Pendidikan</h3>
+                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-book-open mr-2 detail-item-icon"></i>Pendidikan Terakhir
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->pendidikan_terakhir }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-university mr-2 detail-item-icon"></i>Jurusan
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->jurusan }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-calendar-day mr-2 detail-item-icon"></i>Tahun Lulus
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->tahun_lulus }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 detail-item-icon"></i>Pendidikan
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->pendidikan }}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                {{-- Kartu Diklat --}}
+                <div class="bg-white/70 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-midnight_green mb-6 pb-3 border-b border-midnight_green/10">Riwayat
+                        Diklat</h3>
+                    @if ($pegawai->nama_diklat || $pegawai->tahun_diklat || $pegawai->jumlah_jam_diklat)
+                        <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                            <div class="flex flex-col detail-item">
+                                <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                    <i class="fas fa-certificate mr-2 detail-item-icon"></i>Nama Diklat
+                                </dt>
+                                <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                    {{ $pegawai->nama_diklat ?? '-' }}
                                 </dd>
                             </div>
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-gray-500">Keterangan</dt>
-                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    {{ $pegawai->keterangan ?? '-' }}</dd>
+                            <div class="flex flex-col detail-item">
+                                <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                    <i class="fas fa-calendar mr-2 detail-item-icon"></i>Tahun Diklat
+                                </dt>
+                                <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                    {{ $pegawai->tahun_diklat ?? '-' }}
+                                </dd>
+                            </div>
+                            <div class="flex flex-col detail-item">
+                                <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                    <i class="fas fa-clock mr-2 detail-item-icon"></i>Jumlah Jam
+                                </dt>
+                                <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                    {{ $pegawai->jumlah_jam_diklat ? $pegawai->jumlah_jam_diklat . ' Jam' : '-' }}
+                                </dd>
                             </div>
                         </dl>
-                    </div>
+                    @else
+                        <p class="text-midnight_green-300 italic text-center py-4">Tidak ada riwayat diklat.</p>
+                    @endif
+                </div>
+
+                {{-- Kartu Keterangan & Catatan Mutasi --}}
+                <div class="bg-white/70 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-midnight_green mb-6 pb-3 border-b border-midnight_green/10">Catatan
+                        Lainnya</h3>
+                    <dl class="grid grid-cols-1 gap-x-8 gap-y-6">
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-info-circle mr-2 detail-item-icon"></i>Keterangan
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->keterangan ?? '-' }}
+                            </dd>
+                        </div>
+                        <div class="flex flex-col detail-item">
+                            <dt class="text-sm font-medium text-midnight_green-300 flex items-center">
+                                <i class="fas fa-history mr-2 detail-item-icon"></i>Catatan Mutasi
+                            </dt>
+                            <dd class="mt-1 text-base font-semibold text-midnight_green-200">
+                                {{ $pegawai->catatan_mutasi ?? '-' }}
+                            </dd>
+                        </div>
+                    </dl>
                 </div>
             </div>
 
             {{-- Kolom Kanan: Dokumen Terkait --}}
             <div class="lg:col-span-1">
-                <div class="bg-white shadow-lg rounded-xl">
-                    <div class="p-6">
+                <div class="bg-white/70 backdrop-blur-md shadow-lg rounded-2xl">
+                    <div class="p-6 border-b border-midnight_green/10">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-xl font-bold text-gray-900">Dokumen Terkait</h3>
-                            <button id="add-document-btn"
-                                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition duration-300 ease-in-out transform hover:scale-110">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
+                            <h3 class="text-xl font-bold text-midnight_green">Dokumen Terkait</h3>
+                            <button id="add-document-btn" title="Tambah Dokumen"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-midnight_green text-white shadow-md transition duration-300 ease-in-out transform hover:bg-midnight_green-600 hover:scale-110">
+                                <i class="fas fa-plus"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="border-t border-gray-200">
+                    <div>
                         @if ($pegawai->dokumenPegawai->count() > 0)
-                            <ul class="divide-y divide-gray-200">
+                            <ul class="divide-y divide-midnight_green/10">
                                 @foreach ($pegawai->dokumenPegawai as $dokumen)
                                     <li
-                                        class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200">
+                                        class="p-4 flex items-center justify-between hover:bg-ecru-900/60 transition-colors duration-200 group">
                                         <div class="flex items-center space-x-4">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400"
-                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
+                                            <i class="fas fa-file-alt text-ecru-300 group-hover:text-ecru-400"></i>
                                             <div class="flex-grow">
-                                                <p class="text-sm font-medium text-gray-900">{{ $dokumen->judul }}</p>
-                                                <p class="text-xs text-gray-500">{{ $dokumen->jenis_dokumen }}</p>
+                                                <p
+                                                    class="text-sm font-medium text-midnight_green-200 group-hover:text-midnight_green-100">
+                                                    {{ $dokumen->judul }}</p>
+                                                <p
+                                                    class="text-xs text-midnight_green-300 group-hover:text-midnight_green-200">
+                                                    {{ $dokumen->jenis_dokumen }}</p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center space-x-3">
-                                            {{-- Pastikan nama route ini benar, contoh: 'dokumen.show' atau 'pegawai.dokumen.show' --}}
+                                        <div
+                                            class="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <a href="{{ Storage::url($dokumen->file_path) }}" target="_blank"
-                                                class="text-gray-400 hover:text-indigo-600" title="Lihat Dokumen">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                                    fill="currentColor">
-                                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                                    <path fill-rule="evenodd"
-                                                        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.27 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
+                                                class="text-midnight_green-300 hover:text-ecru-400" title="Lihat Dokumen">
+                                                <i class="fas fa-eye"></i>
                                             </a>
                                             <form action="{{ route('pegawai.dokumen.destroy', $dokumen->id) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus dokumen ini?');">
+                                                method="POST" onsubmit="return confirm('Yakin hapus dokumen ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-gray-400 hover:text-red-600"
+                                                <button type="submit" class="text-midnight_green-300 hover:text-red-500"
                                                     title="Hapus Dokumen">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
-                                                        viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd"
-                                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
-                                                            clip-rule="evenodd" />
-                                                    </svg>
+                                                    <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -146,13 +298,9 @@
                             </ul>
                         @else
                             <div class="text-center py-12 px-6">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                                </svg>
-                                <p class="mt-4 text-sm font-medium text-gray-700">Belum Ada Dokumen</p>
-                                <p class="mt-1 text-sm text-gray-500">Klik tombol '+' untuk menambahkan.</p>
+                                <i class="fas fa-folder-open text-4xl text-midnight_green/20 mb-4"></i>
+                                <p class="text-sm font-medium text-midnight_green-300">Belum Ada Dokumen</p>
+                                <p class="mt-1 text-xs text-midnight_green-400">Klik tombol '+' untuk menambahkan.</p>
                             </div>
                         @endif
                     </div>
@@ -162,64 +310,112 @@
         </div>
     </div>
 
-    {{-- Modal Tambah Dokumen --}}
+    {{-- Modal Tambah Dokumen (dengan gaya yang disesuaikan) --}}
+    {{-- Modal Tambah Dokumen (dengan gaya yang disesuaikan) --}}
     <div id="document-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50 transition-opacity duration-300">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-8 m-4 transform" id="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800">Unggah Dokumen Baru</h3>
-                <button id="close-modal-btn"
-                    class="text-gray-400 hover:text-gray-800 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+        class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50 p-4 transition-opacity duration-300">
+
+        <div class="bg-ecru-900 rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-300 scale-95"
+            id="modal-content">
+
+            <div class="flex justify-between items-center p-6 border-b border-midnight_green/20">
+                <h3 class="text-xl font-bold text-midnight_green-200">Unggah Dokumen Baru</h3>
+                <button id="close-modal-btn" aria-label="Close"
+                    class="text-midnight_green-300 hover:text-white transition rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-ecru-500">
+                    <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
-            {{-- Pastikan route 'pegawai.dokumen.store' ada dan menerima parameter ID pegawai --}}
             <form action="{{ route('pegawai.dokumen.store', $pegawai->id) }}" method="POST"
-                enctype="multipart/form-data">
+                enctype="multipart/form-data" class="p-6">
                 @csrf
-                <div class="space-y-6">
+                <div class="space-y-5">
+
                     <div>
-                        <label for="judul" class="block text-sm font-medium text-gray-700">Judul Dokumen</label>
-                        <input type="text" name="judul" id="judul" required
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="jenis_dokumen_input" class="block text-sm font-medium text-gray-700">Jenis
+                        <label for="judul" class="block text-sm font-medium text-midnight_green-300 mb-1">Judul
                             Dokumen</label>
-                        {{-- Datalist adalah pilihan yang baik untuk memberikan saran tapi tetap mengizinkan input bebas --}}
-                        <input list="jenis_dokumen_list" name="jenis_dokumen" id="jenis_dokumen_input" required
-                            placeholder="Pilih atau ketik jenis dokumen"
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <datalist id="jenis_dokumen_list">
-                            <option value="SK CPNS"></option>
-                            <option value="SK PNS"></option>
-                            <option value="SK Kenaikan Pangkat"></option>
-                            <option value="Ijazah"></option>
-                            <option value="Transkrip Nilai"></option>
-                            <option value="Sertifikat Pelatihan/Diklat"></option>
-                            <option value="KTP (Kartu Tanda Penduduk)"></option>
-                            <option value="KK (Kartu Keluarga)"></option>
-                            <option value="NPWP"></option>
-                            <option value="Buku Nikah"></option>
-                        </datalist>
+                        <input type="text" name="judul" id="judul" value="{{ old('judul') }}" required
+                            autofocus
+                            class="block w-full bg-white/10 text-white border border-midnight_green/30 rounded-lg shadow-sm focus:border-ecru-500 focus:ring-ecru-500 sm:text-sm py-2 px-3 @error('judul') border-red-500 @enderror">
+                        @error('judul')
+                            <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                        @enderror
                     </div>
+
+                    {{-- Bagian Jenis Dokumen Diperbarui --}}
                     <div>
-                        <label for="file" class="block text-sm font-medium text-gray-700">Pilih File</label>
-                        <input type="file" name="file" id="file" required
-                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        <label for="jenis_dokumen" class="block text-sm font-medium text-midnight_green-300 mb-1">Jenis
+                            Dokumen</label>
+                        {{-- Style diubah agar teks menjadi hitam dengan background putih --}}
+                        <select name="jenis_dokumen" id="jenis_dokumen" required
+                            class="block w-full bg-white text-gray-900 border border-midnight_green/30 rounded-lg shadow-sm focus:border-ecru-500 focus:ring-ecru-500 sm:text-sm py-2 px-3 @error('jenis_dokumen') border-red-500 @enderror">
+                            <option value="" disabled selected>Pilih Jenis Dokumen</option>
+                            <option value="SK CPNS" {{ old('jenis_dokumen') == 'SK CPNS' ? 'selected' : '' }}>SK CPNS
+                            </option>
+                            <option value="SK PNS" {{ old('jenis_dokumen') == 'SK PNS' ? 'selected' : '' }}>SK PNS
+                            </option>
+                            <option value="SK Kenaikan Pangkat"
+                                {{ old('jenis_dokumen') == 'SK Kenaikan Pangkat' ? 'selected' : '' }}>SK Kenaikan Pangkat
+                            </option>
+                            <option value="Ijazah" {{ old('jenis_dokumen') == 'Ijazah' ? 'selected' : '' }}>Ijazah
+                            </option>
+                            <option value="Sertifikat Pelatihan/Diklat"
+                                {{ old('jenis_dokumen') == 'Sertifikat Pelatihan/Diklat' ? 'selected' : '' }}>Sertifikat
+                                Pelatihan/Diklat</option>
+                            <option value="KTP" {{ old('jenis_dokumen') == 'KTP' ? 'selected' : '' }}>KTP</option>
+                            <option value="KK" {{ old('jenis_dokumen') == 'KK' ? 'selected' : '' }}>KK</option>
+                            <option value="Lainnya" {{ old('jenis_dokumen') == 'Lainnya' ? 'selected' : '' }}>Lainnya
+                            </option>
+                        </select>
+                        @error('jenis_dokumen')
+                            <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                        @enderror
+
+                        {{-- Input field ini akan muncul saat "Lainnya" dipilih --}}
+                        <div id="jenis_dokumen_lainnya_container"
+                            class="mt-3 {{ old('jenis_dokumen') == 'Lainnya' ? '' : 'hidden' }}">
+                            <label for="jenis_dokumen_lainnya_input"
+                                class="block text-sm font-medium text-midnight_green-300 mb-1">Jenis Dokumen
+                                Lainnya</label>
+                            <input type="text" name="jenis_dokumen_lainnya" id="jenis_dokumen_lainnya_input"
+                                value="{{ old('jenis_dokumen_lainnya') }}" placeholder="Ketikkan jenis dokumen di sini"
+                                class="block w-full bg-white text-gray-900 border border-midnight_green/30 rounded-lg shadow-sm focus:border-ecru-500 focus:ring-ecru-500 sm:text-sm py-2 px-3 @error('jenis_dokumen_lainnya') border-red-500 @enderror">
+                            @error('jenis_dokumen_lainnya')
+                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
+
+                    <div>
+                        <label for="file" class="block text-sm font-medium text-midnight_green-300 mb-1">Pilih
+                            File</label>
+                        <div class="relative mt-1">
+                            <input type="file" name="file" id="file" required
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                aria-describedby="file-name">
+                            <div
+                                class="flex items-center justify-between w-full text-sm text-midnight_green-300 border border-midnight_green/30 rounded-lg px-3 py-2 @error('file') border-red-500 @enderror">
+                                <span id="file-name" class="text-gray-400 truncate">Belum ada file yang dipilih...</span>
+                                <span
+                                    class="font-semibold bg-ecru-500/20 text-ecru-300 hover:bg-ecru-500/30 py-1 px-3 rounded-full text-xs">
+                                    Telusuri
+                                </span>
+                            </div>
+                        </div>
+                        @error('file')
+                            <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                 </div>
+
                 <div class="mt-8 flex justify-end space-x-3">
                     <button type="button" id="cancel-btn"
-                        class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 border border-gray-300 rounded-lg shadow-sm">
+                        class="bg-midnight_green/30 hover:bg-midnight_green/50 text-white font-bold py-2 px-5 rounded-lg shadow-sm transition">
                         Batal
                     </button>
                     <button type="submit"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm">
+                        class="bg-ecru-500 hover:bg-ecru-600 text-midnight_green-100 font-bold py-2 px-5 rounded-lg shadow-sm transition">
                         Simpan Dokumen
                     </button>
                 </div>
@@ -227,10 +423,10 @@
         </div>
     </div>
 @endsection
-
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Elemen-elemen untuk fungsionalitas modal
             const modal = document.getElementById('document-modal');
             const modalContent = document.getElementById('modal-content');
             const addBtn = document.getElementById('add-document-btn');
@@ -238,9 +434,14 @@
             const cancelBtn = document.getElementById('cancel-btn');
             const form = document.querySelector('#document-modal form');
 
+            // Elemen-elemen baru untuk dropdown "Jenis Dokumen"
+            const jenisDokumenSelect = document.getElementById('jenis_dokumen');
+            const lainnyaContainer = document.getElementById('jenis_dokumen_lainnya_container');
+            const lainnyaInput = document.getElementById('jenis_dokumen_lainnya_input');
+
             function showModal() {
                 modal.classList.remove('hidden');
-                setTimeout(() => { // Memberi sedikit waktu untuk transisi
+                setTimeout(() => {
                     modal.classList.remove('opacity-0');
                     modalContent.classList.remove('scale-95');
                 }, 10);
@@ -249,44 +450,47 @@
             function hideModal() {
                 modal.classList.add('opacity-0');
                 modalContent.classList.add('scale-95');
-                setTimeout(() => { // Tunggu animasi selesai sebelum menyembunyikan
+                setTimeout(() => {
                     modal.classList.add('hidden');
-                    form.reset(); // Reset form setelah modal tertutup
+                    form.reset(); // Mereset form
+                    // Memastikan field "Lainnya" juga ikut tersembunyi saat modal ditutup
+                    lainnyaContainer.classList.add('hidden');
+                    lainnyaInput.removeAttribute('required');
                 }, 300);
             }
 
+            // Event listener untuk tombol-tombol modal
             addBtn.addEventListener('click', showModal);
             closeBtn.addEventListener('click', hideModal);
             cancelBtn.addEventListener('click', hideModal);
-
-            // Tutup modal jika klik di luar area konten modal
             modal.addEventListener('click', function(event) {
                 if (event.target === modal) {
                     hideModal();
                 }
             });
-
-            // Tutup modal dengan tombol Escape
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
                     hideModal();
                 }
             });
+
+            // === Fungsionalitas Baru untuk Opsi "Lainnya" ===
+            jenisDokumenSelect.addEventListener('change', function() {
+                if (this.value === 'Lainnya') {
+                    lainnyaContainer.classList.remove('hidden'); // Tampilkan input
+                    lainnyaInput.setAttribute('required', 'required'); // Jadikan wajib diisi
+                } else {
+                    lainnyaContainer.classList.add('hidden'); // Sembunyikan input
+                    lainnyaInput.removeAttribute('required'); // Hapus atribut wajib
+                    lainnyaInput.value = ''; // Kosongkan nilainya
+                }
+            });
+
+            // Trigger check saat halaman dimuat (jika ada old value dari server)
+            if (jenisDokumenSelect.value === 'Lainnya') {
+                lainnyaContainer.classList.remove('hidden');
+                lainnyaInput.setAttribute('required', 'required');
+            }
         });
     </script>
-@endpush
-
-@push('styles')
-    {{-- Style ini ditambahkan untuk mendukung animasi modal yang lebih halus --}}
-    <style>
-        #document-modal {
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        #modal-content {
-            transform: scale(0.95);
-            transition: transform 0.3s ease-in-out;
-        }
-    </style>
 @endpush

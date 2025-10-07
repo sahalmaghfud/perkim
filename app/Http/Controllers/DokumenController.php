@@ -7,6 +7,8 @@ use App\Models\Dokumen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class DokumenController extends Controller
 {
@@ -60,7 +62,7 @@ class DokumenController extends Controller
 
     public function store(Request $request)
     {
-        // [PENYESUAIAN] Validasi tetap sama
+        // 1. Validasi input (tetap sama)
         $validatedData = $request->validate([
             'judul' => 'required|string|max:255',
             'kategori' => 'required|string|max:255',
@@ -77,37 +79,39 @@ class DokumenController extends Controller
             'tanggal_surat' => 'nullable|date',
         ]);
 
-        // [PENYESUAIAN] Logika baru untuk menyimpan file
+        // 2. Logika baru untuk menangani dan menyimpan file
         if ($request->hasFile('file_dokumen')) {
-            // 1. Ambil file dari request
             $file = $request->file('file_dokumen');
 
+            // --- PERUBAHAN DIMULAI DI SINI ---
 
+            // Ambil informasi yang diperlukan untuk path folder
+            $bidang = Bidang::find($validatedData['bidang_id']);
+            $namaBidangFolder = Str::slug($bidang->nama_bidang); // Membuat nama folder yang aman dari spasi/karakter aneh
+            $bulanTahunFolder = Carbon::parse($validatedData['tanggal'])->format('m-Y'); // Format: bulan-tahun, cth: 10-2025
+
+            // Gabungkan menjadi path direktori yang diinginkan
+            $directoryPath = "dokumen-files/{$namaBidangFolder}/{$bulanTahunFolder}";
+
+            // Buat nama file yang unik (sama seperti sebelumnya)
             $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-
-            // 3. Ambil ekstensi file
             $extension = $file->getClientOriginalExtension();
+            $newFileName = $originalName . '_' . now()->format('Ymd_His') . '.' . $extension;
 
-            // 4. Buat nama baru (nama_asli + timestamp + ekstensi)
-            $newFileName = $originalName . '_' . now()->format('Y-m-d_H-i-s') . '.' . $extension;
+            // Simpan file ke direktori baru
+            $path = $file->storeAs($directoryPath, $newFileName, 'public');
 
-
-            // 4. Simpan file dengan nama baru menggunakan storeAs()
-            //    Argumen: (path, nama_file_baru, disk)
-            $path = $file->storeAs('dokumen-files', $newFileName, 'public');
-
-            // 5. Simpan path ke database
             $validatedData['file_path'] = $path;
         }
 
+        // 3. Buang key 'file_dokumen' dan simpan data ke database
         unset($validatedData['file_dokumen']);
         Dokumen::create($validatedData);
 
+        // 4. Redirect dengan pesan sukses
         $bidang = Bidang::find($validatedData['bidang_id']);
-        $namaBidang = $bidang->nama_bidang; // Asumsikan kolom nama di tabel bidang adalah 'nama'
+        $namaBidang = $bidang->nama_bidang;
 
-
-        // Redirect dengan pesan sukses yang menyertakan nama bidang
         return redirect()->route('dokumen.bidang', $namaBidang)
             ->with('success', "Dokumen berhasil ditambahkan ke {$namaBidang}!");
     }
@@ -138,43 +142,64 @@ class DokumenController extends Controller
      */
     public function update(Request $request, Dokumen $dokumen)
     {
-        // Validasi tetap sama
+        // 1. Validasi input
         $validatedData = $request->validate([
             'judul' => 'required|string|max:255',
-            // ... validasi lainnya ...
+            'kategori' => 'required|string|max:255',
+            'tipe_dokumen' => 'required|in:dokumen,surat',
+            'bidang_id' => 'required|exists:bidang,id',
+            'tanggal' => 'required|date',
+            // File bersifat opsional saat update
+            'file_dokumen' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:5120',
+            'deskripsi' => 'nullable|string',
+            'nomor_surat' => 'nullable|string|max:255',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
+            'perihal' => 'nullable|string',
+            'lampiran' => 'nullable|integer',
             'tanggal_surat' => 'nullable|date',
         ]);
 
-        // [PENYESUAIAN] Logika baru untuk update file
+        // 2. Logika untuk mengganti file jika ada file baru yang di-upload
         if ($request->hasFile('file_dokumen')) {
-            // Hapus file lama jika ada
+            // Hapus file lama dari storage untuk menghemat ruang
             if ($dokumen->file_path) {
                 Storage::disk('public')->delete($dokumen->file_path);
             }
 
-            // 1. Ambil file dari request
+            // --- PERUBAHAN DIMULAI DI SINI ---
             $file = $request->file('file_dokumen');
 
-            // 2. Ambil nama asli file
-            $originalName = $file->getClientOriginalName();
+            // Ambil informasi untuk path dari data yang BARU divalidasi
+            $bidang = Bidang::find($validatedData['bidang_id']);
+            $namaBidangFolder = Str::slug($bidang->nama_bidang);
+            $bulanTahunFolder = Carbon::parse($validatedData['tanggal'])->format('m-Y');
 
-            // 3. Buat nama baru yang unik
-            $newFileName = $originalName . '_' . now()->format('Y-m-d_H-i-s');
+            // Siapkan path direktori yang baru
+            $directoryPath = "dokumen-files/{$namaBidangFolder}/{$bulanTahunFolder}";
 
-            // 4. Simpan file baru dengan nama kustom
-            $path = $file->storeAs('dokumen-files', $newFileName, 'public');
+            // Buat nama file unik (dengan ekstensi yang benar)
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $newFileName = $originalName . '_' . now()->format('Ymd_His') . '.' . $extension;
+
+            // Simpan file baru ke direktori yang benar
+            $path = $file->storeAs($directoryPath, $newFileName, 'public');
+
+            // Simpan path baru untuk di-update ke database
             $validatedData['file_path'] = $path;
+            // --- AKHIR DARI PERUBAHAN ---
         }
 
-        unset($validatedData['file_dokumen']);
+        // 3. Update data di database
         $dokumen->update($validatedData);
 
-        $bidang = Bidang::find($validatedData['bidang_id']);
-        $namaBidang = $bidang->nama_bidang; // Asumsikan kolom nama di tabel bidang adalah 'nama'
+        // 4. Redirect ke halaman yang sesuai dengan pesan sukses
+        // Ambil nama bidang yang mungkin juga baru diubah
+        $namaBidang = $dokumen->bidang->nama_bidang;
 
-        // Redirect dengan pesan sukses yang menyertakan nama bidang
         return redirect()->route('dokumen.bidang', $namaBidang)
-            ->with('success', "Dokumen berhasil edit");
+            ->with('success', 'Dokumen berhasil diupdate!');
     }
 
     /**

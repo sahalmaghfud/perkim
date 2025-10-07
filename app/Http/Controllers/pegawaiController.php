@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str; // Tambahkan ini untuk menggunakan helper Str
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PegawaiExport;
+use Carbon\Carbon;
 
 class PegawaiController extends Controller
 {
@@ -22,6 +25,49 @@ class PegawaiController extends Controller
     public function index()
     {
         $pegawais = Pegawai::with(['pangkat', 'bidang'])->latest()->paginate(10);
+
+        // Proses setiap data pegawai untuk menambahkan status pangkat
+        $pegawais->getCollection()->transform(function ($pegawai) {
+            if (is_null($pegawai->tmt_pangkat)) {
+                $pegawai->status_pangkat = [
+                    'color' => 'gray',
+                    'tooltip' => 'TMT Pangkat tidak diisi.'
+                ];
+                return $pegawai;
+            }
+
+            $tmtPangkat = Carbon::parse($pegawai->tmt_pangkat);
+            $selisihBulan = round($tmtPangkat->diffInMonths(Carbon::now()));
+
+            if ($selisihBulan >= 48) { // 4 tahun atau lebih
+                $pegawai->status_pangkat = [
+                    'color' => 'red',
+                    'tooltip' => 'Perlu diproses: Lebih dari 4 tahun sejak TMT Pangkat terakhir.'
+                ];
+            } elseif ($selisihBulan >= 44) {
+                $pegawai->status_pangkat = [
+                    'color' => 'yellow',
+                    'tooltip' => 'Mendekati periode: ' . $selisihBulan . ' bulan sejak TMT Pangkat terakhir.'
+                ];
+            } else {
+                $pegawai->status_pangkat = [
+                    'color' => 'green',
+                    'tooltip' => 'Periode aman: Baru ' . $selisihBulan . ' bulan sejak TMT Pangkat terakhir.'
+                ];
+            }
+
+            return $pegawai;
+        });
+
+        // Urutkan berdasarkan warna (merah → kuning → hijau → abu-abu)
+        $orderedColors = ['red', 'yellow', 'green', 'gray'];
+        $sorted = $pegawais->getCollection()->sortBy(function ($pegawai) use ($orderedColors) {
+            return array_search($pegawai->status_pangkat['color'], $orderedColors);
+        })->values();
+
+        // Ganti koleksi hasil paginate dengan yang sudah diurutkan
+        $pegawais->setCollection($sorted);
+
         return view('pegawai.index', compact('pegawais'));
     }
 
@@ -40,7 +86,7 @@ class PegawaiController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+
         $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
             'nip' => 'required|string|max:25|unique:pegawai,nip',
@@ -57,11 +103,12 @@ class PegawaiController extends Controller
             'nama_diklat' => 'nullable|string|max:255',
             'tahun_diklat' => 'nullable|digits:4|integer',
             'jumlah_jam_diklat' => 'nullable|integer',
-            'pendidikan_terakhir' => 'required|string|max:100',
+            'pendidikan_terakhir' => 'nullable|string|max:100',
             'jurusan' => 'required|string|max:150',
             'tahun_lulus' => 'required|digits:4|integer|min:1950|max:' . (date('Y')),
             'jenis_kelamin' => 'required|in:L,P',
             'catatan_mutasi' => 'nullable|string',
+            'nama_univ' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -120,6 +167,7 @@ class PegawaiController extends Controller
             'tahun_lulus' => 'required|digits:4|integer|min:1950|max:' . (date('Y')),
             'jenis_kelamin' => 'required|in:L,P',
             'catatan_mutasi' => 'nullable|string',
+            'nama_univ' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -207,6 +255,16 @@ class PegawaiController extends Controller
         $dokumen->delete();
 
         return back()->with('success', 'Dokumen berhasil dihapus.');
+    }
+
+
+    public function export()
+    {
+        // Mendefinisikan nama file yang akan di-download
+        $fileName = 'Laporan_Data_Pegawai_' . date('Y-m-d') . '.xlsx';
+
+        // Menggunakan Maatwebsite/Excel untuk men-download file
+        return Excel::download(new PegawaiExport, $fileName);
     }
 
 }

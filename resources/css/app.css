@@ -8,30 +8,49 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
-        colors: {
-        'midnight_green': {
-          DEFAULT: '#074B61',
-          100: '#010f13',
-          200: '#031d26',
-          300: '#042c39',
-          400: '#053b4c',
-          500: '#074B61',
-          600: '#0c84ac',
-          700: '#1abaef',
-          800: '#66d1f4',
-          900: '#b3e8fa'
-        },
-        'ecru': {
-          DEFAULT: '#D5C78C',
-          100: '#332d13',
-          200: '#675a26',
-          300: '#9a8739',
-          400: '#c1ac58',
-          500: '#D5C78C',
-          600: '#ddd1a3',
-          700: '#e5ddba',
-          800: '#eee8d1',
-          900: '#f6f4e8'
-        }
+
+}
+
+
+@layer utilities {
+    /* ======================================= */
+    /* PALET WARNA CUSTOM             */
+    /* ======================================= */
+
+    /* --- Warna Midnight Green --- */
+
+    /* Default */
+    .bg-midnight_green { background-color: #074B61; }
+    .text-midnight_green { color: #074B61; }
+    .border-midnight_green { border-color: #074B61; }
+
+    /* Shades (Tingkat Warna) */
+    .text-midnight_green-100 { color: #010f13; }
+    .text-midnight_green-200 { color: #031d26; }
+    .text-midnight_green-300 { color: #042c39; }
+    .text-midnight_green-400 { color: #053b4c; }
+    .bg-midnight_green-500 { background-color: #074B61; }
+    .hover\:bg-midnight_green-600:hover { background-color: #0c84ac; }
+    .bg-midnight_green-900 { background-color: #b3e8fa; }
+    .text-midnight_green-900\/80 { color: rgba(179, 232, 250, 0.8); }
+
+    /* --- Warna Ecru --- */
+
+    /* Default */
+    .bg-ecru { background-color: #D5C78C; }
+    .text-ecru { color: #D5C78C; }
+    .border-ecru { border-color: #D5C78C; }
+
+    /* Shades (Tingkat Warna) */
+    .text-ecru-300 { color: #9a8739; }
+    .hover\:text-ecru-400:hover { color: #c1ac58; }
+    .bg-ecru-500 { background-color: #D5C78C; }
+    .hover\:bg-ecru-600:hover { background-color: #ddd1a3; }
+    .bg-ecru-900 { background-color: #f6f4e8; }
+    .hover\:bg-ecru-900\/60:hover { background-color: rgba(246, 244, 232, 0.6); }
+
+    /* --- Gradien Khusus --- */
+    .bg-gradient-midnight-green {
+        background-image: linear-gradient(to bottom right, #074B61, #053b4c);
     }
 }

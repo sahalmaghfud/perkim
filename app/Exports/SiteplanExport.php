@@ -3,156 +3,199 @@
 namespace App\Exports;
 
 use App\Models\Siteplan;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SiteplanExport implements FromCollection, WithHeadings, WithMapping
+class SiteplanExport implements FromQuery, WithMapping, WithEvents, ShouldAutoSize, WithStyles
 {
-    /**
-     * @var array
-     */
     protected $filters;
+    private $rowNumber = 0;
 
-    /**
-     * Constructor untuk menerima array filter dari controller.
-     *
-     * @param array $filters
-     */
     public function __construct(array $filters = [])
     {
         $this->filters = $filters;
     }
 
     /**
-     * Menyiapkan query ke database dengan menerapkan filter yang diterima.
-     *
-     * @return \Illuminate\Support\Collection
+     * Menggunakan FromQuery untuk efisiensi dan menerapkan filter.
      */
-    public function collection()
+    public function query()
     {
         $query = Siteplan::query();
 
-        // 1. Terapkan filter pencarian kata kunci
+        // 1. Filter Pencarian Umum (search)
+        // Diperbarui agar hanya mencari 'nama' pemohon sesuai placeholder
         if (!empty($this->filters['search'])) {
             $search = $this->filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('nama_pt', 'like', "%{$search}%")
-                    ->orWhere('nomor_site_plan', 'like', "%{$search}%");
-            });
+            $query->where('nama', 'like', "%{$search}%");
         }
 
-        // 2. Terapkan filter berdasarkan kategori (dropdown)
-        if (!empty($this->filters['kecamatan'])) {
-            $query->where('kecamatan', $this->filters['kecamatan']);
-        }
-        if (!empty($this->filters['desa'])) {
-            $query->where('desa', $this->filters['desa']);
-        }
+        // 2. BARU: Filter berdasarkan Nama PT
         if (!empty($this->filters['nama_pt'])) {
             $query->where('nama_pt', $this->filters['nama_pt']);
         }
+
+        // 3. Filter berdasarkan Kecamatan (sudah ada)
+        if (!empty($this->filters['kecamatan'])) {
+            $query->where('kecamatan', $this->filters['kecamatan']);
+        }
+
+        // 4. BARU: Filter berdasarkan Desa
+        if (!empty($this->filters['desa'])) {
+            $query->where('desa', $this->filters['desa']);
+        }
+
+        // 5. Filter berdasarkan Keterangan (sudah ada)
         if (!empty($this->filters['keterangan'])) {
             $query->where('keterangan', $this->filters['keterangan']);
         }
-        if (!empty($this->filters['jenis'])) {
-            $query->where('jenis', $this->filters['jenis']);
-        }
-        if (!empty($this->filters['tahun'])) {
-            $query->where('tahun', $this->filters['tahun']);
-        }
 
-        // 3. Terapkan filter rentang tanggal
-        if (!empty($this->filters['start_date'])) {
-            $query->whereDate('tanggal_site_plan', '>=', $this->filters['start_date']);
-        }
-        if (!empty($this->filters['end_date'])) {
-            $query->whereDate('tanggal_site_plan', '<=', $this->filters['end_date']);
-        }
-
-        return $query->latest('created_at')->get();
+        return $query->orderBy('nama', 'asc');
     }
 
     /**
-     * Menentukan nama-nama kolom header di file Excel.
+     * Memetakan data sesuai urutan kolom pada header.
      *
-     * @return array
-     */
-    public function headings(): array
-    {
-        return [
-            'Nama',
-            'Tipe',
-            'Luas Lahan Per Unit',
-            'Luas Lahan Perumahan (M2)',
-            'Luas PSU (M2)',
-            'Panjang Prasarana Jalan (M)',
-            'Lebar Prasarana Jalan (M)',
-            'Luas Prasarana Jalan (M2)',
-            'Luas Prasarana Drainase (M2)',
-            'Luas Prasarana RTH (M2)',
-            'Luas Prasarana TPS (M2)',
-            'Luas Sarana Pemakaman (M2)',
-            'Luas Sarana Olahraga/Lainnya (M2)',
-            'Panjang Utilitas',
-            'Sumber Air Bersih',
-            'Jenis',
-            'Nama PT',
-            'Jumlah Unit Rumah',
-            'Tahun',
-            'Alamat',
-            'Kecamatan',
-            'Desa',
-            'Nomor Site Plan',
-            'Tanggal Site Plan',
-            'Nomor BAST Adm',
-            'Tanggal BAST Adm',
-            'Nomor BAST Fisik',
-            'Tanggal BAST Fisik',
-            'Keterangan',
-        ];
-    }
-
-    /**
-     * Memetakan data dari setiap model ke dalam array untuk setiap baris di Excel.
-     *
-     * @param mixed $siteplan
-     * @return array
+     * @param Siteplan $siteplan
      */
     public function map($siteplan): array
     {
         return [
+            ++$this->rowNumber,
             $siteplan->nama,
+            $siteplan->nama_pt,
+            $siteplan->alamat,
+            $siteplan->kecamatan,
+            $siteplan->desa,
+            "'" . $siteplan->nomor_site_plan, // Diberi ' agar dibaca sebagai teks
+            $siteplan->tanggal_site_plan ? Carbon::parse($siteplan->tanggal_site_plan)->format('d-m-Y') : '-',
+            $siteplan->jumlah_unit_rumah,
+            $siteplan->jenis,
             $siteplan->tipe,
             $siteplan->luas_lahan_per_unit,
             $siteplan->luas_lahan_perumahan,
             $siteplan->luas_psu,
-            $siteplan->panjang_prasarana_jalan,
-            $siteplan->lebar_prasarana_jalan,
+            // Prasarana
             $siteplan->luas_prasarana_jalan,
             $siteplan->luas_prasarana_drainase,
-            $siteplan->luas_prasarana_rth,
-            $siteplan->luas_prasarana_tps,
-            $siteplan->luas_sarana_pemakaman,
+            // Sarana
+            $siteplan->luas_sarana_ibadah,      // Asumsi ada kolom ini di DB Anda
+            $siteplan->luas_sarana_perniagaan, // Asumsi ada kolom ini di DB Anda
             $siteplan->luas_sarana_olahraga_dll,
+            $siteplan->luas_sarana_rth,         // Di gambar RTH masuk Sarana
+            $siteplan->luas_sarana_pemakaman,
+            // Utilitas
             $siteplan->panjang_utilitas,
             $siteplan->sumber_air_bersih,
-            $siteplan->jenis,
-            $siteplan->nama_pt,
-            $siteplan->jumlah_unit_rumah,
+            // BAST
+            "'" . $siteplan->nomor_bast_adm,
+            $siteplan->tanggal_bast_adm ? Carbon::parse($siteplan->tanggal_bast_adm)->format('d-m-Y') : '-',
+            "'" . $siteplan->nomor_bast_fisik,
+            $siteplan->tanggal_bast_fisik ? Carbon::parse($siteplan->tanggal_bast_fisik)->format('d-m-Y') : '-',
+            // Lain-lain
             $siteplan->tahun,
-            $siteplan->alamat,
-            $siteplan->kecamatan,
-            $siteplan->desa,
-            $siteplan->nomor_site_plan,
-            $siteplan->tanggal_site_plan ? Carbon::parse($siteplan->tanggal_site_plan)->format('d-m-Y') : '',
-            $siteplan->nomor_bast_adm,
-            $siteplan->tanggal_bast_adm ? Carbon::parse($siteplan->tanggal_bast_adm)->format('d-m-Y') : '',
-            $siteplan->nomor_bast_fisik,
-            $siteplan->tanggal_bast_fisik ? Carbon::parse($siteplan->tanggal_bast_fisik)->format('d-m-Y') : '',
             $siteplan->keterangan,
+        ];
+    }
+
+    /**
+     * Menerapkan style ke sheet.
+     */
+    public function styles(Worksheet $sheet)
+    {
+        // Menambahkan border ke sel data mulai dari baris ke-3
+        $sheet->getStyle('A3:AD' . ($this->rowNumber + 2))->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+            'alignment' => [
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
+            ],
+        ]);
+    }
+
+    /**
+     * Mendaftarkan event untuk membuat custom header setelah sheet dibuat.
+     */
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+
+                // Tambah 2 baris kosong di atas untuk header
+                $sheet->insertNewRowBefore(1, 2);
+
+                // --- HEADER BARIS 1 (Teks & Merge) ---
+                $sheet->setCellValue('A1', 'No.')->mergeCells('A1:A2');
+                $sheet->setCellValue('B1', 'NAMA PERUMAHAN')->mergeCells('B1:B2');
+                $sheet->setCellValue('C1', 'NAMA PT')->mergeCells('C1:C2');
+                $sheet->setCellValue('D1', 'ALAMAT')->mergeCells('D1:D2');
+                $sheet->setCellValue('E1', 'LOKASI')->mergeCells('E1:F1');
+                $sheet->setCellValue('G1', 'SITEPLAN')->mergeCells('G1:H1');
+                $sheet->setCellValue('I1', 'DATA UNIT')->mergeCells('I1:K1');
+                $sheet->setCellValue('L1', 'LUAS LAHAN (M2)')->mergeCells('L1:N1');
+                $sheet->setCellValue('O1', 'RINCIAN LUAS PSU (M2)')->mergeCells('O1:W1');
+                $sheet->setCellValue('X1', 'BERITA ACARA SERAH TERIMA')->mergeCells('X1:AA1');
+                $sheet->setCellValue('AB1', 'Tahun')->mergeCells('AB1:AB2');
+                $sheet->setCellValue('AC1', 'Keterangan')->mergeCells('AC1:AC2');
+                $sheet->setCellValue('AD1', 'File Path')->mergeCells('AD1:AD2'); // Kolom tambahan
+    
+                // --- HEADER BARIS 2 (Sub-header) ---
+                $sheet->setCellValue('E2', 'Kecamatan');
+                $sheet->setCellValue('F2', 'Desa/Kelurahan');
+                $sheet->setCellValue('G2', 'Nomor');
+                $sheet->setCellValue('H2', 'Tanggal');
+                $sheet->setCellValue('I2', 'Jumlah');
+                $sheet->setCellValue('J2', 'Jenis');
+                $sheet->setCellValue('K2', 'Type');
+                $sheet->setCellValue('L2', 'Per Unit');
+                $sheet->setCellValue('M2', 'Perumahan');
+                $sheet->setCellValue('N2', 'PSU');
+                $sheet->setCellValue('O2', 'Prasarana Jalan');
+                $sheet->setCellValue('P2', 'Prasarana Drainase');
+                $sheet->setCellValue('Q2', 'Sarana Ibadah');
+                $sheet->setCellValue('R2', 'Sarana Perniagaan');
+                $sheet->setCellValue('S2', 'Sarana Olah Raga dan Lapangan Terbuka');
+                $sheet->setCellValue('T2', 'Sarana RTH');
+                $sheet->setCellValue('U2', 'Sarana Makam');
+                $sheet->setCellValue('V2', 'Utilitas Jaringan');
+                $sheet->setCellValue('W2', 'Sumber Air Bersih');
+                $sheet->setCellValue('X2', 'Nomor BAST Administrasi');
+                $sheet->setCellValue('Y2', 'Tanggal');
+                $sheet->setCellValue('Z2', 'Nomor BAST Fisik');
+                $sheet->setCellValue('AA2', 'Tanggal');
+
+                // --- STYLE UNTUK HEADER ---
+                $headerStyle = [
+                    'font' => ['bold' => true],
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                        'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                        'wrapText' => true,
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ],
+                    ],
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['argb' => 'FFC5D9F1'], // Biru muda seperti di gambar
+                    ],
+                ];
+
+                // Terapkan style ke seluruh range header
+                $sheet->getStyle('A1:AD2')->applyFromArray($headerStyle);
+            },
         ];
     }
 }

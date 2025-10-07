@@ -3,15 +3,21 @@
 @section('content')
     <div class="w-full">
 
-        {{-- Header Halaman --}}
-        {{-- Warna border diubah agar terlihat di background gelap --}}
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
-            {{-- Warna font judul diubah menjadi terang --}}
-            <h2 class="text-2xl font-bold text-blue-700">Edit Siteplan</h2>
-            <a href="{{ route('siteplans.index') }}"
-                class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
-                Kembali
-            </a>
+        <div class="relative bg-midnight_green-500 text-white rounded-2xl shadow-xl p-6 overflow-hidden mb-8">
+            <i class=" absolute -right-4 -bottom-8 text-midnight_green-300/30 text-9xl transform rotate-[-15deg]"></i>
+            <div class="relative z-10 flex justify-between items-center">
+                <div>
+                    <h3 class="text-2xl font-bold tracking-tight">
+                        Edit Siteplan
+                    </h3>
+                    <p class="mt-1 text-midnight_green-900/80 text-sm">Isi formulir untuk mengubah data siteplan.</p>
+                </div>
+                <a href="{{ route('siteplans.index') }}"
+                    class="inline-flex items-center px-4 py-2 bg-white/10 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-white/20 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
+            </div>
         </div>
 
         {{-- Notifikasi Error (versi dark mode) --}}
@@ -33,13 +39,6 @@
             @method('PUT')
 
             @include('siteplans._form')
-
-            <div class="text-center mt-6">
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg transition duration-300 ease-in-out">
-                    Perbarui
-                </button>
-            </div>
         </form>
     </div>
 @endsection
