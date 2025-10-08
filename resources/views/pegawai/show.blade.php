@@ -315,13 +315,13 @@
     <div id="document-modal"
         class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50 p-4 transition-opacity duration-300">
 
-        <div class="bg-ecru-900 rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-300 scale-95"
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-300 scale-95"
             id="modal-content">
 
-            <div class="flex justify-between items-center p-6 border-b border-midnight_green/20">
-                <h3 class="text-xl font-bold text-midnight_green-200">Unggah Dokumen Baru</h3>
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-midnight_green-900">Unggah Dokumen Baru</h3>
                 <button id="close-modal-btn" aria-label="Close"
-                    class="text-midnight_green-300 hover:text-white transition rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-ecru-500">
+                    class="text-gray-400 hover:text-midnight_green-600 transition rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-midnight_green-500">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -332,23 +332,21 @@
                 <div class="space-y-5">
 
                     <div>
-                        <label for="judul" class="block text-sm font-medium text-midnight_green-300 mb-1">Judul
+                        <label for="judul" class="block text-sm font-medium text-gray-700 mb-1">Judul
                             Dokumen</label>
                         <input type="text" name="judul" id="judul" value="{{ old('judul') }}" required
                             autofocus
-                            class="block w-full bg-white/10 text-white border border-midnight_green/30 rounded-lg shadow-sm focus:border-ecru-500 focus:ring-ecru-500 sm:text-sm py-2 px-3 @error('judul') border-red-500 @enderror">
+                            class="block w-full bg-white text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:border-midnight_green-500 focus:ring-midnight_green-500 sm:text-sm py-2 px-3 @error('judul') border-red-500 @enderror">
                         @error('judul')
-                            <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Bagian Jenis Dokumen Diperbarui --}}
                     <div>
-                        <label for="jenis_dokumen" class="block text-sm font-medium text-midnight_green-300 mb-1">Jenis
+                        <label for="jenis_dokumen" class="block text-sm font-medium text-gray-700 mb-1">Jenis
                             Dokumen</label>
-                        {{-- Style diubah agar teks menjadi hitam dengan background putih --}}
                         <select name="jenis_dokumen" id="jenis_dokumen" required
-                            class="block w-full bg-white text-gray-900 border border-midnight_green/30 rounded-lg shadow-sm focus:border-ecru-500 focus:ring-ecru-500 sm:text-sm py-2 px-3 @error('jenis_dokumen') border-red-500 @enderror">
+                            class="block w-full bg-white text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:border-midnight_green-500 focus:ring-midnight_green-500 sm:text-sm py-2 px-3 @error('jenis_dokumen') border-red-500 @enderror">
                             <option value="" disabled selected>Pilih Jenis Dokumen</option>
                             <option value="SK CPNS" {{ old('jenis_dokumen') == 'SK CPNS' ? 'selected' : '' }}>SK CPNS
                             </option>
@@ -368,42 +366,41 @@
                             </option>
                         </select>
                         @error('jenis_dokumen')
-                            <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                         @enderror
 
-                        {{-- Input field ini akan muncul saat "Lainnya" dipilih --}}
                         <div id="jenis_dokumen_lainnya_container"
                             class="mt-3 {{ old('jenis_dokumen') == 'Lainnya' ? '' : 'hidden' }}">
                             <label for="jenis_dokumen_lainnya_input"
-                                class="block text-sm font-medium text-midnight_green-300 mb-1">Jenis Dokumen
+                                class="block text-sm font-medium text-gray-700 mb-1">Jenis Dokumen
                                 Lainnya</label>
                             <input type="text" name="jenis_dokumen_lainnya" id="jenis_dokumen_lainnya_input"
                                 value="{{ old('jenis_dokumen_lainnya') }}" placeholder="Ketikkan jenis dokumen di sini"
-                                class="block w-full bg-white text-gray-900 border border-midnight_green/30 rounded-lg shadow-sm focus:border-ecru-500 focus:ring-ecru-500 sm:text-sm py-2 px-3 @error('jenis_dokumen_lainnya') border-red-500 @enderror">
+                                class="block w-full bg-white text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:border-midnight_green-500 focus:ring-midnight_green-500 sm:text-sm py-2 px-3 @error('jenis_dokumen_lainnya') border-red-500 @enderror">
                             @error('jenis_dokumen_lainnya')
-                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
 
                     <div>
-                        <label for="file" class="block text-sm font-medium text-midnight_green-300 mb-1">Pilih
+                        <label for="file" class="block text-sm font-medium text-gray-700 mb-1">Pilih
                             File</label>
                         <div class="relative mt-1">
                             <input type="file" name="file" id="file" required
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 aria-describedby="file-name">
                             <div
-                                class="flex items-center justify-between w-full text-sm text-midnight_green-300 border border-midnight_green/30 rounded-lg px-3 py-2 @error('file') border-red-500 @enderror">
-                                <span id="file-name" class="text-gray-400 truncate">Belum ada file yang dipilih...</span>
+                                class="flex items-center justify-between w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2 @error('file') border-red-500 @enderror">
+                                <span id="file-name" class="text-gray-500 truncate">Belum ada file yang dipilih...</span>
                                 <span
-                                    class="font-semibold bg-ecru-500/20 text-ecru-300 hover:bg-ecru-500/30 py-1 px-3 rounded-full text-xs">
+                                    class="font-semibold bg-midnight_green-100 text-midnight_green-800 hover:bg-midnight_green-200 py-1 px-3 rounded-full text-xs">
                                     Telusuri
                                 </span>
                             </div>
                         </div>
                         @error('file')
-                            <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -411,11 +408,11 @@
 
                 <div class="mt-8 flex justify-end space-x-3">
                     <button type="button" id="cancel-btn"
-                        class="bg-midnight_green/30 hover:bg-midnight_green/50 text-white font-bold py-2 px-5 rounded-lg shadow-sm transition">
+                        class="bg-white hover:bg-gray-100 text-gray-700 font-bold py-2 px-5 rounded-lg shadow-sm transition border border-gray-300">
                         Batal
                     </button>
                     <button type="submit"
-                        class="bg-ecru-500 hover:bg-ecru-600 text-midnight_green-100 font-bold py-2 px-5 rounded-lg shadow-sm transition">
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg shadow-sm transition">
                         Simpan Dokumen
                     </button>
                 </div>

@@ -68,7 +68,6 @@
     </div>
 
     {{-- Kecamatan --}}
-    {{-- Kecamatan --}}
     <div>
         <label for="kecamatan" class="block text-sm font-medium text-slate-700">Kecamatan</label>
         <select name="kecamatan" id="kecamatan" required
@@ -89,9 +88,9 @@
 
     {{-- Kode Wilayah --}}
     <div>
-        <label for="kode_wilayah" class="block text-sm font-medium text-slate-700">Kode Wilayah (Opsional)</label>
+        <label for="kode_wilayah" class="block text-sm font-medium text-slate-700">Kode Wilayah</label>
         <input type="text" name="kode_wilayah" id="kode_wilayah"
-            value="{{ old('kode_wilayah', $rumahTidakLayakHuni->kode_wilayah ?? '') }}"
+            value="{{ old('kode_wilayah', $rumahTidakLayakHuni->kode_wilayah ?? '') }}" required
             class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
     </div>
 </div>
@@ -113,39 +112,38 @@
 
             {{-- Kategori Rumah --}}
             <div>
-                <label for="kategori_rumah" class="block text-sm font-medium text-slate-700">Kategori Rumah
-                    (Opsional)</label>
+                <label for="kategori_rumah" class="block text-sm font-medium text-slate-700">Kategori Rumah</label>
                 <input type="text" name="kategori_rumah" id="kategori_rumah"
-                    value="{{ old('kategori_rumah', $rumahTidakLayakHuni->kategori_rumah ?? '') }}"
+                    value="{{ old('kategori_rumah', $rumahTidakLayakHuni->kategori_rumah ?? '') }}" required
                     placeholder="Contoh: Rusak Ringan, Rusak Berat"
                     class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
             </div>
 
             {{-- Kepemilikan Rumah --}}
             <div>
-                <label for="kepemilikan_rumah" class="block text-sm font-medium text-slate-700">Kepemilikan Rumah
-                    (Opsional)</label>
+                <label for="kepemilikan_rumah" class="block text-sm font-medium text-slate-700">Kepemilikan
+                    Rumah</label>
                 <input type="text" name="kepemilikan_rumah" id="kepemilikan_rumah"
-                    value="{{ old('kepemilikan_rumah', $rumahTidakLayakHuni->kepemilikan_rumah ?? '') }}"
+                    value="{{ old('kepemilikan_rumah', $rumahTidakLayakHuni->kepemilikan_rumah ?? '') }}" required
                     placeholder="Contoh: Milik Sendiri, Sewa"
                     class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
             </div>
 
             {{-- Kepemilikan Tanah --}}
             <div>
-                <label for="kepemilikan_tanah" class="block text-sm font-medium text-slate-700">Kepemilikan Tanah
-                    (Opsional)</label>
+                <label for="kepemilikan_tanah" class="block text-sm font-medium text-slate-700">Kepemilikan
+                    Tanah</label>
                 <input type="text" name="kepemilikan_tanah" id="kepemilikan_tanah"
-                    value="{{ old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') }}"
+                    value="{{ old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') }}" required
                     placeholder="Contoh: Milik Sendiri, Tanah Desa"
                     class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
             </div>
 
             {{-- Koordinat --}}
             <div class="md:col-span-2">
-                <label for="koordinat" class="block text-sm font-medium text-slate-700">Koordinat (Opsional)</label>
+                <label for="koordinat" class="block text-sm font-medium text-slate-700">Koordinat</label>
                 <input type="text" name="koordinat" id="koordinat"
-                    value="{{ old('koordinat', $rumahTidakLayakHuni->koordinat ?? '') }}"
+                    value="{{ old('koordinat', $rumahTidakLayakHuni->koordinat ?? '') }}" required
                     placeholder="Contoh: -7.2575, 112.7521"
                     class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
             </div>
@@ -171,6 +169,7 @@
                     <label for="foto_sebelum_perbaikan" class="block text-sm font-medium text-slate-700">Foto Sebelum
                         Perbaikan</label>
                     <input type="file" name="foto_sebelum_perbaikan" id="foto_sebelum_perbaikan"
+                        @if (!isset($rumahTidakLayakHuni)) required @endif
                         class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
                     @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_sebelum_perbaikan)
                         <div class="mt-2">

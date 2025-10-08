@@ -50,8 +50,10 @@ class DokumenController extends Controller
      */
     public function create()
     {
+        $kategoriList = Dokumen::select('kategori')->whereNotNull('kategori')->distinct()->orderBy('kategori')->pluck('kategori');
         return view('dokumen.create', [
-            'bidangList' => bidang::all()
+            'bidangList' => bidang::all(),
+            'kategoriList' => $kategoriList
         ]);
     }
 
@@ -131,9 +133,11 @@ class DokumenController extends Controller
      */
     public function edit(Dokumen $dokumen)
     {
+        $kategoriList = Dokumen::select('kategori')->whereNotNull('kategori')->distinct()->orderBy('kategori')->pluck('kategori');
         return view('dokumen.edit', [
             'dokumen' => $dokumen,
-            'bidangList' => bidang::all()
+            'bidangList' => bidang::all(),
+            'kategoriList' => $kategoriList
         ]);
     }
 

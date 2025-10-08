@@ -63,10 +63,32 @@
         @endif
     </div>
     <div>
-        <label for="kategori" class="block text-sm font-medium text-slate-700">Kategori</label>
-        <input type="text" id="kategori" name="kategori" value="{{ old('kategori', $dokumen->kategori ?? '') }}"
-            required placeholder="Contoh: Keuangan, Teknis, Undangan"
-            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+        <label for="kategori_select" class="block text-sm font-medium text-slate-700">Kategori</label>
+
+        {{-- Dropdown untuk kategori yang sudah ada --}}
+        <select id="kategori_select" name="kategori" required
+            class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+            <option value="">-- Pilih Kategori --</option>
+
+            {{-- Loop melalui kategori yang ada dari controller --}}
+            @foreach ($kategoriList as $kategori)
+                <option value="{{ $kategori }}" {{-- Logika untuk menangani data lama atau data yang sedang diedit --}}
+                    {{ old('kategori', $dokumen->kategori ?? '') == $kategori ? 'selected' : '' }}>
+                    {{ $kategori }}
+                </option>
+            @endforeach
+
+            {{-- Opsi untuk menambahkan kategori baru --}}
+            <option value="lainnya">-- Tambah Kategori Baru --</option>
+        </select>
+
+        {{-- Input untuk kategori baru, awalnya disembunyikan --}}
+        <div id="kategori_baru_wrapper" class="hidden mt-2">
+            <label for="kategori_baru" class="block text-xs font-medium text-slate-600 mb-1">Nama Kategori Baru</label>
+            <input type="text" id="kategori_baru_input" name="kategori_baru"
+                placeholder="Masukkan nama kategori baru"
+                class="block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+        </div>
     </div>
 </div>
 
@@ -191,6 +213,27 @@
 
             // Jalankan fungsi setiap kali pilihan berubah
             tipeDokumenSelect.addEventListener('change', toggleSuratFields);
+
+            const kategoriSelect = document.getElementById('kategori_select');
+            const kategoriBaruWrapper = document.getElementById('kategori_baru_wrapper');
+            const kategoriBaruInput = document.getElementById('kategori_baru_input');
+
+            function toggleKategoriBaru() {
+                if (kategoriSelect.value === 'lainnya') {
+                    kategoriBaruWrapper.classList.remove('hidden'); // Tampilkan input
+                    kategoriBaruInput.setAttribute('required', 'required'); // Wajibkan input ini
+                } else {
+                    kategoriBaruWrapper.classList.add('hidden'); // Sembunyikan input
+                    kategoriBaruInput.removeAttribute('required'); // Hapus kewajiban
+                    kategoriBaruInput.value = ''; // Kosongkan nilainya
+                }
+            }
+
+            // Jalankan fungsi saat halaman dimuat (untuk handle old input atau edit)
+            toggleKategoriBaru();
+
+            // Jalankan fungsi setiap kali pilihan dropdown berubah
+            kategoriSelect.addEventListener('change', toggleKategoriBaru);
         });
     </script>
 @endpush

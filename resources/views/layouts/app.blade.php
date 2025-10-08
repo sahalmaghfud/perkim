@@ -185,8 +185,9 @@
                         </a>
                         <a href="/rtlh"
                             class="flex items-center py-2.5 px-5 pl-12 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-all duration-300">
-                            <i class="fas fa-file-alt w-4 mr-2"></i> RTLH
+                            <i class="fas fa-house-damage w-4 mr-2"></i> RTLH
                         </a>
+
                     </div>
                 </div>
 
@@ -209,8 +210,9 @@
                         </a>
                         <a href="/jalan_lingkungan"
                             class="flex items-center py-2.5 px-5 pl-12 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-all duration-300">
-                            <i class="fas fa-file-alt w-4 mr-2"></i> Proyek Jalan
+                            <i class="fas fa-road w-4 mr-2"></i> Proyek Jalan
                         </a>
+
                     </div>
                 </div>
 

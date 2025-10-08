@@ -54,7 +54,7 @@
 
                         {{-- 1. Input Pencarian Umum --}}
                         <input type="text" name="search" value="{{ request('search') }}"
-                            placeholder="Cari Nama Pemohon..."
+                            placeholder="Cari Nama Perumahan."
                             class="w-full bg-white border-gray-300 text-gray-700 rounded-md shadow-sm focus:ring-midnight_green focus:border-midnight_green">
 
                         {{-- 2. Filter Berdasarkan Nama PT (Data dari Controller) --}}
@@ -152,6 +152,10 @@
                                 Pilih file Excel (.xlsx, .xls) yang ingin Anda import. Pastikan format kolom sesuai.
                             </p>
                             <div>
+                                <p class="mb-2 text-sm font-medium text-gray-700">Contoh format untuk import data : <a
+                                        href="asset/contoh_format.xlsx" class="text-green-500 hover:underline">
+                                        Contoh Format Excel
+                                    </a></p>
                                 <label for="import_file" class="block text-sm font-medium text-gray-700">Pilih File</label>
                                 <input type="file" name="file" id="import_file" required
                                     class="mt-1 block w-full text-sm text-gray-500
