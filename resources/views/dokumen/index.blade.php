@@ -97,7 +97,7 @@
                 </div>
 
                 {{-- Tombol Tambah di Kanan --}}
-                @if (Auth::check() && (Auth::user()->role == 'admin' || Auth::user()->bidang_id == $dokumen->bidang_id))
+                @if (Auth::check() && (Auth::user()->role == 'admin' || Auth::user()->bidang_id == $bidangTerpilih->bidang_id))
                     <a href="{{ route('dokumen.create') }}"
                         class="bg-midnight_green hover:bg-midnight_green-600 text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 shadow-md transform hover:scale-105 flex items-center gap-2">
                         <i class="fas fa-plus fa-fw"></i>
