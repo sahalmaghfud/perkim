@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | SIPANDA</title>
+    <title>Login | SINTAK</title>
 
     @vite('resources/css/app.css')
 
@@ -60,8 +60,9 @@
             <div class="text-center mb-8" style="text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.4);">
                 <img src="{{ asset('asset/logo_pkp.png') }}" alt="Logo PKP"
                     class="h-20 w-auto mx-auto mb-4 drop-shadow-lg">
-                <h1 class="text-4xl font-bold text-white tracking-wider">SIPANDA</h1>
-                <p class="text-white/80 mt-1">Sistem Manajemen Surat & Dokumen</p>
+                <h1 class="text-4xl font-bold text-white tracking-wider">SINTAK</h1>
+                <p class="text-white/80 mt-1">Sistem Informasi Tata Kelola
+                    Perumahan dan Kawasan Permukiman</p>
             </div>
 
             <div class="bg-white/50 backdrop-blur-md p-8 rounded-2xl shadow-xl w-full">

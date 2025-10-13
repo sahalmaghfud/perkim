@@ -1,6 +1,6 @@
 @extends('layouts.app') {{-- Ganti 'layouts.app' dengan nama file layout utama Anda --}}
 
-@section('title', 'Ganti Password | SIPANDA')
+@section('title', 'Ganti Password | SINTAK')
 
 @section('content')
     <div class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -9,7 +9,7 @@
 
             <div class="text-center mb-8">
                 <img src="{{ asset('asset/logo_pkp.png') }}" alt="Logo PKP" class="h-16 w-auto mx-auto mb-4">
-                <h1 class="text-3xl font-bold text-gray-800 tracking-wider">SIPANDA</h1>
+                <h1 class="text-3xl font-bold text-gray-800 tracking-wider">SINTAK</h1>
             </div>
 
             <div class="bg-white p-8 rounded-2xl shadow-lg w-full">

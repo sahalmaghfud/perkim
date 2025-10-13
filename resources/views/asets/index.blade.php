@@ -36,6 +36,74 @@
         </div>
     </div>
 
+    {{-- Panel Filter dan Pencarian --}}
+    <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
+        <form action="{{ route('asets.index') }}" method="GET">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                {{-- Kolom Pencarian --}}
+                <div class="md:col-span-2">
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari Nama Barang</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" name="search" id="search"
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-midnight_green-500 focus:border-midnight_green-500 sm:text-sm"
+                            placeholder="Contoh: Laptop, Meja..." value="{{ request('search') }}">
+                    </div>
+                </div>
+
+                {{-- Filter KIB --}}
+                <div>
+                    <label for="jenis_kib" class="block text-sm font-medium text-gray-700 mb-1">Filter KIB</label>
+                    <select id="jenis_kib" name="jenis_kib"
+                        class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-midnight_green-500 focus:border-midnight_green-500 sm:text-sm rounded-lg shadow-sm">
+                        <option value="">Semua KIB</option>
+                        <option value="KIB A" @if (request('jenis_kib') == 'KIB A') selected @endif>A - Tanah</option>
+                        <option value="KIB B" @if (request('jenis_kib') == 'KIB B') selected @endif>B - Peralatan dan Mesin
+                        </option>
+                        <option value="KIB C" @if (request('jenis_kib') == 'KIB C') selected @endif>C - Gedung dan Bangunan
+                        </option>
+                        <option value="KIB D" @if (request('jenis_kib') == 'KIB D') selected @endif>D - Jalan, Irigasi, dan
+                            Jaringan</option>
+                        <option value="KIB E" @if (request('jenis_kib') == 'KIB E') selected @endif>E - Aset Tetap Lainnya
+                        </option>
+                        <option value="KIB F" @if (request('jenis_kib') == 'KIB F') selected @endif>F - Konstruksi Dalam
+                            Pengerjaan</option>
+                        {{-- Saya tambahkan opsi G dan H sesuai permintaan Anda --}}
+                        <option value="KIB G" @if (request('jenis_kib') == 'KIB G') selected @endif>G - Aset Tak Berwujud
+                        </option>
+                        <option value="KIB H" @if (request('jenis_kib') == 'KIB H') selected @endif>H - Aset Lain-Lain</option>
+                    </select>
+                </div>
+
+                {{-- Filter Tahun --}}
+                <div>
+                    <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Filter Tahun</label>
+                    <select id="tahun" name="tahun"
+                        class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-midnight_green-500 focus:border-midnight_green-500 sm:text-sm rounded-lg shadow-sm">
+                        <option value="">Semua Tahun</option>
+                        {{-- Anda perlu mengirim variabel $tahunOptions dari controller --}}
+                        @foreach ($tahunOptions as $tahun)
+                            <option value="{{ $tahun }}" @if (request('tahun') == $tahun) selected @endif>
+                                {{ $tahun }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center justify-end gap-3">
+                <a href="{{ route('asets.index') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Reset
+                    Filter</a>
+                <button type="submit"
+                    class="inline-flex items-center gap-2 bg-midnight_green-500 text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 shadow-md transform hover:bg-midnight_green-600">
+                    <i class="fas fa-filter fa-fw"></i>
+                    <span>Terapkan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+
     {{-- Panel Tabel Data --}}
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
         <div class="overflow-x-auto">
@@ -72,7 +140,8 @@
                                         N/A</div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-midnight_green-200 font-medium">{{ $aset->nama_barang }}</td>
+                            <td class="px-6 py-4 text-sm text-midnight_green-200 font-medium">
+                                {{ $aset->nama_barang }}</td>
                             <td class="px-6 py-4">
                                 <span
                                     class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ $aset->jenis_kib }}</span>
@@ -104,10 +173,10 @@
                         <tr>
                             <td colspan="7" class="px-6 py-16 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
-                                    <i class="fas fa-box-open text-gray-300 text-5xl mb-4"></i>
-                                    <h3 class="text-lg font-semibold text-gray-700">Tidak Ada Data Aset</h3>
-                                    <p class="text-sm mt-1">Belum ada data yang ditambahkan. Silakan klik tombol "Tambah
-                                        Aset".</p>
+                                    <i class="fas fa-search-minus text-gray-300 text-5xl mb-4"></i>
+                                    <h3 class="text-lg font-semibold text-gray-700">Aset Tidak Ditemukan</h3>
+                                    <p class="text-sm mt-1">Tidak ada data yang cocok dengan kriteria filter Anda. Coba
+                                        reset filter.</p>
                                 </div>
                             </td>
                         </tr>
@@ -118,7 +187,8 @@
 
         @if ($asets->hasPages())
             <div class="p-5 border-t border-gray-200 bg-ecru-900">
-                {{ $asets->links() }}
+                {{-- PENTING: Tambahkan appends() agar parameter filter tetap ada saat pindah halaman --}}
+                {{ $asets->appends(request()->query())->links() }}
             </div>
         @endif
     </div>

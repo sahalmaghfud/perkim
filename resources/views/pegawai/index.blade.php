@@ -128,7 +128,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     @php
                                         // Ambil data status pangkat dari objek pegawai
-                                        $status = $pegawai->status_pangkat;
+                                        $status = $pegawai->status;
 
                                         // Tentukan kelas warna Tailwind berdasarkan nilai 'color'
                                         $colorClass =

@@ -8,15 +8,47 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
+use App\Models\Aset;
+
 class MasterAsetController extends Controller
 {
     /**
      * Menampilkan daftar semua aset.
      */
-    public function index(): View
+    public function index(Request $request)
     {
-        $asets = MasterAset::latest()->paginate(10);
-        return view('asets.index', compact('asets'));
+        // Mulai query builder
+        $query = MasterAset::query();
+
+        // 1. Terapkan filter pencarian jika ada input 'search'
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $search = $request->input('search');
+            // Cari di kolom 'nama_barang' atau kolom relevan lainnya
+            $q->where('nama_barang', 'like', "%{$search}%");
+        });
+
+        // 2. Terapkan filter jenis KIB jika ada input 'jenis_kib'
+        $query->when($request->filled('jenis_kib'), function ($q) use ($request) {
+            $q->where('jenis_kib', $request->input('jenis_kib'));
+        });
+
+        // 3. Terapkan filter tahun perolehan jika ada input 'tahun'
+        $query->when($request->filled('tahun'), function ($q) use ($request) {
+            $q->where('tahun_perolehan', $request->input('tahun'));
+        });
+
+        // Ambil data yang sudah difilter dan urutkan, lalu paginasi
+        // Urutkan berdasarkan data terbaru
+        $asets = $query->latest()->paginate(10);
+
+        // Ambil opsi tahun unik untuk dropdown filter, diurutkan dari terbaru
+        $tahunOptions = MasterAset::select('tahun_perolehan')
+            ->distinct()
+            ->orderBy('tahun_perolehan', 'desc')
+            ->pluck('tahun_perolehan');
+
+        // Kirim data ke view
+        return view('asets.index', compact('asets', 'tahunOptions'));
     }
 
     /**

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') SIPanda</title>
+    <title>@yield('title', 'Dashboard') SINTAK</title>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     @vite('resources/css/app.css')
@@ -246,12 +246,15 @@
                             class="flex items-center py-2.5 px-5 pl-12 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-all duration-300">
                             <i class="fas fa-box-archive w-4 mr-2"></i> Inventaris
                         </a>
-
-
-
-
                     </div>
                 </div>
+                <a href="/#"
+                    class="flex items-center py-3 px-5 transition-all duration-300 hover:bg-emerald-50 rounded-lg">
+                    <i class="fas fa-file-alt w-6 mr-3 text-center text-emerald-600"></i>
+                    <span class="nav-text text-slate-700 font-medium">Pelaporan</span>
+                </a>
+
+
 
             </nav>
         </aside>

@@ -47,6 +47,7 @@ class Pegawai extends Model
         'catatan_mutasi',
         'keterangan',
         'nama_univ',
+        'berkala_terakhir',
     ];
 
     /**

@@ -130,6 +130,14 @@
                         value="{{ old('tmt_pangkat', $pegawai->tmt_pangkat ?? '') }}"
                         class="mt-1 block w-full bg-white/60 text-midnight_green border border-midnight_green/20 rounded-lg shadow-sm focus:border-ecru focus:ring-ecru sm:text-sm py-2 px-3">
                 </div>
+                <div>
+                    <label for="berkala_terakhir" class="block text-sm font-medium text-midnight_green-300"> KGB
+                        Terakhir
+                    </label>
+                    <input type="date" name="berkala_terakhir" id="berkala_terakhir"
+                        value="{{ old('berkala_terakhir', $pegawai->berkala_terakhir ?? '') }}"
+                        class="mt-1 block w-full bg-white/60 text-midnight_green border border-midnight_green/20 rounded-lg shadow-sm focus:border-ecru focus:ring-ecru sm:text-sm py-2 px-3">
+                </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>

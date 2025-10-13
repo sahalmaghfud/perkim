@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Str; // Tambahkan ini untuk menggunakan helper Str
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PegawaiExport;
 use Carbon\Carbon;
@@ -26,47 +26,76 @@ class PegawaiController extends Controller
     {
         $pegawais = Pegawai::with(['pangkat', 'bidang'])->latest()->paginate(10);
 
-        // Proses setiap data pegawai untuk menambahkan status pangkat
+        // Proses setiap data pegawai untuk menambahkan status gabungan (pangkat & berkala)
         $pegawais->getCollection()->transform(function ($pegawai) {
+
+            // --- LANGKAH 1: HITUNG STATUS PANGKAT ---
+            $statusPangkat = [];
             if (is_null($pegawai->tmt_pangkat)) {
-                $pegawai->status_pangkat = [
-                    'color' => 'gray',
-                    'tooltip' => 'TMT Pangkat tidak diisi.'
-                ];
-                return $pegawai;
-            }
-
-            $tmtPangkat = Carbon::parse($pegawai->tmt_pangkat);
-            $selisihBulan = round($tmtPangkat->diffInMonths(Carbon::now()));
-
-            if ($selisihBulan >= 48) { // 4 tahun atau lebih
-                $pegawai->status_pangkat = [
-                    'color' => 'red',
-                    'tooltip' => 'Perlu diproses: Lebih dari 4 tahun sejak TMT Pangkat terakhir.'
-                ];
-            } elseif ($selisihBulan >= 44) {
-                $pegawai->status_pangkat = [
-                    'color' => 'yellow',
-                    'tooltip' => 'Mendekati periode: ' . $selisihBulan . ' bulan sejak TMT Pangkat terakhir.'
-                ];
+                $statusPangkat = ['color' => 'gray', 'tooltip' => 'TMT Pangkat tidak diisi.'];
             } else {
-                $pegawai->status_pangkat = [
-                    'color' => 'green',
-                    'tooltip' => 'Periode aman: Baru ' . $selisihBulan . ' bulan sejak TMT Pangkat terakhir.'
-                ];
+                $tmtPangkat = Carbon::parse($pegawai->tmt_pangkat);
+                $selisihBulanPangkat = (int) $tmtPangkat->diffInMonths(Carbon::now());
+
+
+                if ($selisihBulanPangkat >= 48) {
+                    $statusPangkat = ['color' => 'red', 'tooltip' => 'Perlu proses, > 4 tahun sejak TMT Pangkat.'];
+                } elseif ($selisihBulanPangkat >= 44) {
+                    $statusPangkat = ['color' => 'yellow', 'tooltip' => 'Mendekati, ' . $selisihBulanPangkat . ' bulan sejak TMT Pangkat.'];
+                } else {
+                    $statusPangkat = ['color' => 'green', 'tooltip' => 'Aman, baru ' . $selisihBulanPangkat . ' bulan sejak TMT Pangkat.'];
+                }
             }
+
+            // --- LANGKAH 2: HITUNG STATUS BERKALA ---
+            $statusBerkala = [];
+            if (is_null($pegawai->berkala_terakhir)) {
+                $statusBerkala = ['color' => 'gray', 'tooltip' => 'Berkala Terakhir tidak diisi.'];
+            } else {
+                $berkalaTerakhir = Carbon::parse($pegawai->berkala_terakhir);
+                $selisihBulanBerkala = (int) $berkalaTerakhir->diffInMonths(Carbon::now());
+
+
+                if ($selisihBulanBerkala >= 24) {
+                    $statusBerkala = ['color' => 'red', 'tooltip' => 'Perlu proses, > 2 tahun sejak Berkala.'];
+                } elseif ($selisihBulanBerkala >= 22) {
+                    $statusBerkala = ['color' => 'yellow', 'tooltip' => 'Mendekati, ' . $selisihBulanBerkala . ' bulan sejak Berkala.'];
+                } else {
+                    $statusBerkala = ['color' => 'green', 'tooltip' => 'Aman, baru ' . $selisihBulanBerkala . ' bulan sejak Berkala.'];
+                }
+            }
+
+            // --- LANGKAH 3: GABUNGKAN KEDUA STATUS ---
+            $warnaGabungan = 'gray'; // Default
+            // Prioritas: Merah > Kuning > Hijau
+            if ($statusPangkat['color'] === 'red' || $statusBerkala['color'] === 'red') {
+                $warnaGabungan = 'red';
+            } elseif ($statusPangkat['color'] === 'yellow' || $statusBerkala['color'] === 'yellow') {
+                $warnaGabungan = 'yellow';
+            } elseif ($statusPangkat['color'] === 'green' || $statusBerkala['color'] === 'green') {
+                $warnaGabungan = 'green';
+            }
+
+            // Gabungkan kedua tooltip
+            $tooltipGabungan = "Pangkat: " . $statusPangkat['tooltip'] . "\n" . "Berkala: " . $statusBerkala['tooltip'];
+
+            // Tetapkan properti 'status' gabungan pada objek pegawai
+            $pegawai->status = [
+                'color' => $warnaGabungan,
+                'tooltip' => $tooltipGabungan
+            ];
 
             return $pegawai;
         });
 
-        // Urutkan berdasarkan warna (merah → kuning → hijau → abu-abu)
+        // Urutkan koleksi berdasarkan warna dari status gabungan (merah → kuning → hijau → abu-abu)
         $orderedColors = ['red', 'yellow', 'green', 'gray'];
-        $sorted = $pegawais->getCollection()->sortBy(function ($pegawai) use ($orderedColors) {
-            return array_search($pegawai->status_pangkat['color'], $orderedColors);
+        $sortedCollection = $pegawais->getCollection()->sortBy(function ($pegawai) use ($orderedColors) {
+            return array_search($pegawai->status['color'], $orderedColors);
         })->values();
 
-        // Ganti koleksi hasil paginate dengan yang sudah diurutkan
-        $pegawais->setCollection($sorted);
+        // Ganti koleksi di dalam objek paginator dengan koleksi yang sudah diurutkan
+        $pegawais->setCollection($sortedCollection);
 
         return view('pegawai.index', compact('pegawais'));
     }
@@ -110,6 +139,7 @@ class PegawaiController extends Controller
             'catatan_mutasi' => 'nullable|string',
             'nama_univ' => 'nullable|string',
             'keterangan' => 'nullable|string',
+            'berkala_terakhir' => 'nullable',
         ]);
 
         if ($request->hasFile('foto')) {
@@ -169,6 +199,7 @@ class PegawaiController extends Controller
             'catatan_mutasi' => 'nullable|string',
             'nama_univ' => 'nullable|string',
             'keterangan' => 'nullable|string',
+            'berkala_terakhir' => 'nullable',
         ]);
 
 
