@@ -20,10 +20,12 @@
     </div>
 @endif
 
-{{-- SEKSI 1: DETAIL PEKERJAAN --}}
+
+
+{{-- SEKSI 1: DETAIL PEKERJAAN & LOKASI --}}
 <h3 class="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-4 mb-6">
     <i class="fas fa-road mr-2 text-slate-500"></i>
-    Detail Pekerjaan
+    Detail Pekerjaan & Lokasi
 </h3>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     {{-- Uraian Pekerjaan --}}
@@ -32,6 +34,33 @@
         <input type="text" name="uraian" id="uraian" value="{{ old('uraian', $jalanLingkungan->uraian ?? '') }}"
             required placeholder="Contoh: Pembangunan Jalan Beton RT.01/RW.02"
             class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+    </div>
+
+    {{-- Kecamatan --}}
+    <div>
+        <label for="kecamatan" class="block text-sm font-medium text-slate-700">Kecamatan</label>
+        <select name="kecamatan" id="kecamatan" required
+            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+            <option value="">Pilih Kecamatan</option>
+            {{-- Opsi kecamatan akan diisi oleh JavaScript --}}
+        </select>
+    </div>
+
+    {{-- Desa/Kelurahan --}}
+    <div>
+        <label for="desa" class="block text-sm font-medium text-slate-700">Desa/Kelurahan</label>
+        <select name="desa" id="desa" required disabled
+            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm bg-slate-50 cursor-not-allowed">
+            <option value="">Pilih Kecamatan Terlebih Dahulu</option>
+        </select>
+    </div>
+
+    {{-- Alamat Lengkap --}}
+    <div class="md:col-span-2">
+        <label for="alamat" class="block text-sm font-medium text-slate-700">Alamat Lengkap (Lokasi Pekerjaan)</label>
+        <textarea name="alamat" id="alamat" rows="3"
+            placeholder="Contoh: Jl. Merdeka No. 10, RT.01/RW.02, Desa Makmur, Kecamatan Maju Jaya"
+            class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ old('alamat', $jalanLingkungan->alamat ?? '') }}</textarea>
     </div>
 
     {{-- Volume --}}
@@ -52,6 +81,7 @@
 </div>
 
 {{-- SEKSI 2: INFORMASI KEUANGAN --}}
+{{-- ... (Konten Seksi 2 sampai 5 tetap sama, tidak ada perubahan) ... --}}
 <div class="mt-8 pt-6 border-t border-slate-200">
     <h3 class="text-xl font-semibold text-slate-800 mb-6">
         <i class="fas fa-money-bill-wave mr-2 text-slate-500"></i>
@@ -155,48 +185,8 @@
         <div class="p-6 border border-slate-200 rounded-lg bg-slate-50">
             <h4 class="text-lg font-semibold text-slate-700 mb-4 border-b border-slate-200 pb-2">Tahap 30%</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                    <label for="no_spm_30" class="block text-sm font-medium text-slate-700">No. SPM</label>
-                    <input type="text" name="no_spm_30" id="no_spm_30"
-                        value="{{ old('no_spm_30', $jalanLingkungan->no_spm_30 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="no_sp2d_30" class="block text-sm font-medium text-slate-700">No. SP2D</label>
-                    <input type="text" name="no_sp2d_30" id="no_sp2d_30"
-                        value="{{ old('no_sp2d_30', $jalanLingkungan->no_sp2d_30 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="tanggal_30" class="block text-sm font-medium text-slate-700">Tanggal</label>
-                    <input type="date" name="tanggal_30" id="tanggal_30"
-                        value="{{ old('tanggal_30', isset($jalanLingkungan->tanggal_30) ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_30)->format('Y-m-d') : '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="nilai_30" class="block text-sm font-medium text-slate-700">Nilai (Rp)</label>
-                    <input type="number" name="nilai_30" id="nilai_30"
-                        value="{{ old('nilai_30', $jalanLingkungan->nilai_30 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="ppn_30" class="block text-sm font-medium text-slate-700">PPN (Rp)</label>
-                    <input type="number" name="ppn_30" id="ppn_30"
-                        value="{{ old('ppn_30', $jalanLingkungan->ppn_30 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="pph_30" class="block text-sm font-medium text-slate-700">PPH (Rp)</label>
-                    <input type="number" name="pph_30" id="pph_30"
-                        value="{{ old('pph_30', $jalanLingkungan->pph_30 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div class="md:col-span-2">
-                    <label for="total_30" class="block text-sm font-medium text-slate-700">Total Diterima (Rp)</label>
-                    <input type="number" name="total_30" id="total_30"
-                        value="{{ old('total_30', $jalanLingkungan->total_30 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
+                {{-- Fields for 30% stage --}}
+                @include('jalan_lingkungan._pencairan_fields', ['stage' => '30'])
             </div>
         </div>
 
@@ -204,48 +194,8 @@
         <div class="p-6 border border-slate-200 rounded-lg bg-slate-50">
             <h4 class="text-lg font-semibold text-slate-700 mb-4 border-b border-slate-200 pb-2">Tahap 95%</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                    <label for="no_spm_95" class="block text-sm font-medium text-slate-700">No. SPM</label>
-                    <input type="text" name="no_spm_95" id="no_spm_95"
-                        value="{{ old('no_spm_95', $jalanLingkungan->no_spm_95 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="no_sp2d_95" class="block text-sm font-medium text-slate-700">No. SP2D</label>
-                    <input type="text" name="no_sp2d_95" id="no_sp2d_95"
-                        value="{{ old('no_sp2d_95', $jalanLingkungan->no_sp2d_95 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="tanggal_95" class="block text-sm font-medium text-slate-700">Tanggal</label>
-                    <input type="date" name="tanggal_95" id="tanggal_95"
-                        value="{{ old('tanggal_95', isset($jalanLingkungan->tanggal_95) ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_95)->format('Y-m-d') : '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="nilai_95" class="block text-sm font-medium text-slate-700">Nilai (Rp)</label>
-                    <input type="number" name="nilai_95" id="nilai_95"
-                        value="{{ old('nilai_95', $jalanLingkungan->nilai_95 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="ppn_95" class="block text-sm font-medium text-slate-700">PPN (Rp)</label>
-                    <input type="number" name="ppn_95" id="ppn_95"
-                        value="{{ old('ppn_95', $jalanLingkungan->ppn_95 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="pph_95" class="block text-sm font-medium text-slate-700">PPH (Rp)</label>
-                    <input type="number" name="pph_95" id="pph_95"
-                        value="{{ old('pph_95', $jalanLingkungan->pph_95 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div class="md:col-span-2">
-                    <label for="total_95" class="block text-sm font-medium text-slate-700">Total Diterima (Rp)</label>
-                    <input type="number" name="total_95" id="total_95"
-                        value="{{ old('total_95', $jalanLingkungan->total_95 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
+                {{-- Fields for 95% stage --}}
+                @include('jalan_lingkungan._pencairan_fields', ['stage' => '95'])
             </div>
         </div>
 
@@ -254,49 +204,8 @@
             <h4 class="text-lg font-semibold text-slate-700 mb-4 border-b border-slate-200 pb-2">Tahap 100%
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                    <label for="no_spm_100" class="block text-sm font-medium text-slate-700">No. SPM</label>
-                    <input type="text" name="no_spm_100" id="no_spm_100"
-                        value="{{ old('no_spm_100', $jalanLingkungan->no_spm_100 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="no_sp2d_100" class="block text-sm font-medium text-slate-700">No. SP2D</label>
-                    <input type="text" name="no_sp2d_100" id="no_sp2d_100"
-                        value="{{ old('no_sp2d_100', $jalanLingkungan->no_sp2d_100 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="tanggal_100" class="block text-sm font-medium text-slate-700">Tanggal</label>
-                    <input type="date" name="tanggal_100" id="tanggal_100"
-                        value="{{ old('tanggal_100', isset($jalanLingkungan->tanggal_100) ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_100)->format('Y-m-d') : '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="nilai_100" class="block text-sm font-medium text-slate-700">Nilai (Rp)</label>
-                    <input type="number" name="nilai_100" id="nilai_100"
-                        value="{{ old('nilai_100', $jalanLingkungan->nilai_100 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="ppn_100" class="block text-sm font-medium text-slate-700">PPN (Rp)</label>
-                    <input type="number" name="ppn_100" id="ppn_100"
-                        value="{{ old('ppn_100', $jalanLingkungan->ppn_100 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div>
-                    <label for="pph_100" class="block text-sm font-medium text-slate-700">PPH (Rp)</label>
-                    <input type="number" name="pph_100" id="pph_100"
-                        value="{{ old('pph_100', $jalanLingkungan->pph_100 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
-                <div class="md:col-span-2">
-                    <label for="total_100" class="block text-sm font-medium text-slate-700">Total Diterima
-                        (Rp)</label>
-                    <input type="number" name="total_100" id="total_100"
-                        value="{{ old('total_100', $jalanLingkungan->total_100 ?? '') }}"
-                        class="mt-1 block w-full input-style">
-                </div>
+                {{-- Fields for 100% stage --}}
+                @include('jalan_lingkungan._pencairan_fields', ['stage' => '100'])
             </div>
         </div>
     </div>
@@ -345,6 +254,57 @@
     </div>
 </div>
 
+
+{{-- SEKSI 6: DOKUMENTASI FOTO --}}
+<div class="mt-8 pt-6 border-t border-slate-200">
+    <h3 class="text-xl font-semibold text-slate-800 mb-6">
+        <i class="fas fa-camera-retro mr-2 text-slate-500"></i>
+        Dokumentasi Foto
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {{-- Foto Sebelum --}}
+        <div>
+            <label for="foto_sebelum" class="block text-sm font-medium text-slate-700">Foto Sebelum (0%)</label>
+            @if (isset($jalanLingkungan) && $jalanLingkungan->foto_sebelum_url)
+                <div class="mt-2 mb-2">
+                    <img src="{{ $jalanLingkungan->foto_sebelum_url }}" alt="Foto Sebelum"
+                        class="rounded-lg shadow-md max-h-48 w-auto">
+                    <p class="text-xs text-slate-500 mt-1">Foto saat ini. Pilih file baru untuk mengganti.</p>
+                </div>
+            @endif
+            <input type="file" name="foto_sebelum" id="foto_sebelum"
+                class="mt-1 block w-full text-sm text-slate-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-full file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-indigo-50 file:text-indigo-700
+                          hover:file:bg-indigo-100">
+            <p class="text-xs text-slate-500 mt-1">Format: JPG, PNG, GIF. Maks: 2MB.</p>
+        </div>
+
+        {{-- Foto Sesudah --}}
+        <div>
+            <label for="foto_sesudah" class="block text-sm font-medium text-slate-700">Foto Sesudah (100%)</label>
+            @if (isset($jalanLingkungan) && $jalanLingkungan->foto_sesudah_url)
+                <div class="mt-2 mb-2">
+                    <img src="{{ $jalanLingkungan->foto_sesudah_url }}" alt="Foto Sesudah"
+                        class="rounded-lg shadow-md max-h-48 w-auto">
+                    <p class="text-xs text-slate-500 mt-1">Foto saat ini. Pilih file baru untuk mengganti.</p>
+                </div>
+            @endif
+            <input type="file" name="foto_sesudah" id="foto_sesudah"
+                class="mt-1 block w-full text-sm text-slate-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-full file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-indigo-50 file:text-indigo-700
+                          hover:file:bg-indigo-100">
+            <p class="text-xs text-slate-500 mt-1">Format: JPG, PNG, GIF. Maks: 2MB.</p>
+        </div>
+    </div>
+</div>
+
+
 {{-- Tombol Aksi --}}
 <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-200 gap-4">
     <a href="{{ route('jalan_lingkungan.index') }}"
@@ -364,4 +324,106 @@
             @apply px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const kecamatanSelect = document.getElementById('kecamatan');
+            const desaSelect = document.getElementById('desa');
+
+            // Data Kecamatan dan Desa
+            const data = {
+                "Bahar Selatan": ["Adipura Kencana", "Bukit Jaya", "Bukit Subur", "Mekar Jaya", "Tanjung Baru",
+                    "Tanjung Lebar", "Tanjung Mulia", "Tanjung Sari", "Tri Jaya", "Ujung Tanjung"
+                ],
+                "Bahar Utara": ["Bahar Mulya", "Bukit Mulya", "Markanding", "Matra Manunggal", "Mulya Jaya",
+                    "Pinang Tinggi", "Sumber Jaya", "Sumber Mulya", "Sungai Dayo", "Talang Bukit",
+                    "Talang Datar"
+                ],
+                "Jambi Luar Kota": ["Danau Sarang Elang", "Kedemangan", "Maro Sebo", "Mendalo Darat",
+                    "Mendalo Indah", "Mendalo Laut", "Muara Pijoan", "Muhajirin", "Pematang Gajah",
+                    "Pematang Jering", "Penyengat Olak", "Rengas Bandung", "Sarang Burung", "Sembubuk",
+                    "Senaung", "Simpang Limo", "Simpang Sungai Duren", "Sungai Bertam", "Sungai Duren",
+                    "Pijoan"
+                ],
+                "Kumpeh": ["Betung", "Gedong Karya", "Jebus", "Londerang", "Maju Jaya", "Mekar Sari",
+                    "Pematang Raman", "Petanang", "Puding", "Pulau Mentaro", "Rantau Panjang", "Rondang",
+                    "Seponjen", "Sogo", "Sungai Aur", "Sungai Bungur", "Tanjung"
+                ],
+                "Kumpeh Ulu": ["Pudak", "Muara Kumpeh", "Kota Karang", "Kasang Lopak Alai", "Kasang Pudak",
+                    "Solok", "Sakean", "Lopak Alai", "Tarikan", "Ramin", "Teluk Raya", "Pemunduran",
+                    "Sipin Teluk Duren", "Arang Arang", "Sumber Jaya", "Sungai Terap", "Kasang Kumpeh",
+                    "Kasang Kota Karang"
+                ],
+                "Maro Sebo": ["Bakung", "Baru", "Danau Kedap", "Danau Lamo", "Jambi Tulo", "Lubuk Raman",
+                    "Muaro Jambi", "Mudung Darat", "Niaso", "Setiris", "Tanjung Katung", "Jambi Kecil"
+                ],
+                "Mestong": ["Baru", "Ibru", "Muaro Sebapo", "Naga Sari", "Nyogan", "Pelempang", "Pondok Meja",
+                    "Sebapo", "Suka Damai", "Suka Maju", "Sungai Landai", "Tanjung Pauh KM.32",
+                    "Tanjung Pauh KM.39", "Tanjung Pauh Talang Pelita", "Tempino"
+                ],
+                "Sekernan": ["Berembang", "Bukit Baling", "Gerunggung", "Kedotan", "Keranggan",
+                    "Pematang Pulai", "Pulau Kayu Aro", "Rantau Majo", "Sekernan", "Suak Putat",
+                    "Suko Awin Jaya", "Tantan", "Tanjung Lanjut", "Tunas Baru", "Tunas Mudo", "Sengeti"
+                ],
+                "Sungai Bahar": ["Bakti Mulya", "Berkah", "Bukit Makmur", "Bukit Mas", "Marga Manunggal Jaya",
+                    "Marga Mulya", "Mekar Sari Makmur", "Panca Bakti", "Panca Mulya", "Suka Makmur",
+                    "Tanjung Harapan"
+                ],
+                "Sungai Gelam": ["Sungai Gelam", "Gambut Jaya", "Kebon IX", "Ladang Panjang", "Mekar Jaya",
+                    "Mingkung Jaya", "Parit", "Petaling Jaya", "Sido Mukti", "Sumber Agung",
+                    "Talang Belido", "Talang Kerinci", "Tangkit", "Tangkit Baru", "Trimulya Jaya"
+                ],
+                "Taman Rajo": ["Dusun Mudo", "Kemingking Dalam", "Kemingking Luar", "Kunangan", "Manis Mato",
+                    "Rukam", "Sekumbung", "Talang Duku", "Tebat Patah", "Teluk Jambu"
+                ]
+            };
+
+            const oldKecamatan = "{{ old('kecamatan', $rumahTidakLayakHuni->kecamatan ?? '') }}";
+            const oldDesa = "{{ old('desa', $rumahTidakLayakHuni->desa ?? '') }}";
+
+            for (const kecamatan in data) {
+                const option = document.createElement('option');
+                option.value = kecamatan;
+                option.textContent = kecamatan;
+                if (kecamatan === oldKecamatan) {
+                    option.selected = true;
+                }
+                kecamatanSelect.appendChild(option);
+            }
+
+            function populateDesa(selectedKecamatan, currentDesa) {
+                desaSelect.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
+
+                if (selectedKecamatan && data[selectedKecamatan]) {
+                    desaSelect.disabled = false;
+                    desaSelect.classList.remove('bg-slate-50', 'cursor-not-allowed');
+                    const desas = data[selectedKecamatan];
+
+                    desas.forEach(desa => {
+                        const option = document.createElement('option');
+                        option.value = desa;
+                        option.textContent = desa;
+                        if (desa === currentDesa) {
+                            option.selected = true;
+                        }
+                        desaSelect.appendChild(option);
+                    });
+                } else {
+                    desaSelect.disabled = true;
+                    desaSelect.classList.add('bg-slate-50', 'cursor-not-allowed');
+                    desaSelect.innerHTML = '<option value="">Pilih Kecamatan Terlebih Dahulu</option>';
+                }
+            }
+
+            kecamatanSelect.addEventListener('change', function() {
+                populateDesa(this.value, '');
+            });
+
+            if (oldKecamatan) {
+                populateDesa(oldKecamatan, oldDesa);
+            }
+        });
+    </script>
 @endpush

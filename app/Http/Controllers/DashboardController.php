@@ -61,9 +61,6 @@ class DashboardController extends Controller
         // ========================================
 
         // Status perbaikan (untuk Donut Chart)
-        $rtlhStatus = RumahTidakLayakHuni::select('status', DB::raw('COUNT(*) as jumlah'))
-            ->groupBy('status')
-            ->get();
 
         // RTLH per kecamatan (untuk Bar Chart)
         $rtlhPerKecamatan = RumahTidakLayakHuni::select('kecamatan', DB::raw('COUNT(*) as total'))
@@ -112,7 +109,7 @@ class DashboardController extends Controller
             'dokumenTerbaru',
 
             // RTLH
-            'rtlhStatus',
+
             'rtlhPerKecamatan',
 
             // Jalan Lingkungan

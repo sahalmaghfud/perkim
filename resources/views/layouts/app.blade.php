@@ -128,9 +128,14 @@
             class="bg-white text-gray-800 w-72 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg overflow-y-auto z-30 border-r border-gray-200">
 
             <div class="p-5 text-center border-b border-gray-200 sidebar-header">
-                <img src="{{ asset('asset/logo_pkp.png') }}" alt="Logo PKP" class="h-16 w-auto mx-auto mb-4">
-                <h2 class="text-xl text-teal-900 text-bold mt-2 nav-text"><strong>SIPANDA</strong></h2>
-                <p class="text-sm text-gray-500 nav-text"><strong>Sistem Manajemen Surat & Dokumen</strong></p>
+                <div class="flex items-center justify-center mb-4">
+                    <img src="{{ asset('asset/logo_pkp.png') }}" alt="Logo PKP" class="h-16 w-auto mr-2">
+                    <img src="{{ asset('asset/Logo_Muaro_Jambi.png') }}" alt="Logo Muaro Jambi"
+                        class="h-16 w-auto ml-2">
+                </div>
+                <h2 class="text-xl text-teal-900 text-bold mt-2 nav-text"><strong>SINTAK</strong></h2>
+                <p class="text-sm text-gray-500 nav-text"><strong>Sistem Informasi Tata Kelola
+                        Perumahan dan Kawasan Permukiman</strong></p>
                 <div class="mt-4 font-semibold text-base text-gray-700">
                     <span class="nav-text">{{ Auth::user()->name }}</span>
                 </div>
@@ -236,6 +241,10 @@
                         <a href="/pegawai"
                             class="flex items-center py-2.5 px-5 pl-12 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-all duration-300">
                             <i class="fas fa-users w-4 mr-2"></i> Data Kepegawaian
+                        </a>
+                        <a href="/asets"
+                            class="flex items-center py-2.5 px-5 pl-12 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-all duration-300">
+                            <i class="fas fa-box-archive w-4 mr-2"></i> Inventaris
                         </a>
 
 

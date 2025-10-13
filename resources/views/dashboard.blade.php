@@ -99,14 +99,6 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white rounded-lg shadow-md">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h6 class="text-lg font-semibold text-green-800">Status RTLH</h6>
-                </div>
-                <div class="p-6">
-                    <canvas id="rtlhStatusChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow-md">
-                <div class="px-6 py-4 border-b border-gray-200">
                     <h6 class="text-lg font-semibold text-green-800">RTLH per Kecamatan</h6>
                 </div>
                 <div class="p-6">
@@ -328,27 +320,7 @@
                 }
             });
 
-            // 3. RTLH Status (Doughnut Chart)
-            const rtlhStatusCtx = document.getElementById('rtlhStatusChart').getContext('2d');
-            new Chart(rtlhStatusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: {!! json_encode($rtlhStatus->pluck('status')) !!},
-                    datasets: [{
-                        data: {!! json_encode($rtlhStatus->pluck('jumlah')) !!},
-                        backgroundColor: [colors.danger, colors.success, colors.warning],
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
+
 
             // 4. RTLH per Kecamatan (Bar Chart)
             const rtlhKecamatanCtx = document.getElementById('rtlhKecamatanChart').getContext('2d');

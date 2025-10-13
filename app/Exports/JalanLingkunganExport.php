@@ -25,7 +25,23 @@ class JalanLingkunganExport implements FromQuery, WithMapping, WithEvents, Shoul
 
     public function query()
     {
-        return JalanLingkungan::query()->with('cv')->orderBy('created_at', 'asc');
+        $query = JalanLingkungan::query()->with('cv');
+
+        // Terapkan filter dari constructor
+        // Gunakan array_key_exists untuk cek jika filter ada dan tidak null/kosong
+        if (array_key_exists('kecamatan', $this->filters) && $this->filters['kecamatan']) {
+            $query->where('kecamatan', $this->filters['kecamatan']);
+        }
+
+        if (array_key_exists('desa', $this->filters) && $this->filters['desa']) {
+            $query->where('desa', $this->filters['desa']);
+        }
+
+        if (array_key_exists('tahun', $this->filters) && $this->filters['tahun']) {
+            $query->whereYear('tanggal_awal_pekerjaan', $this->filters['tahun']);
+        }
+
+        return $query->orderBy('created_at', 'asc');
     }
 
     /**

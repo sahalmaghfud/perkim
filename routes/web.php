@@ -10,6 +10,7 @@ use App\Http\Controllers\SiteplanController;
 use App\Http\Controllers\RumahTidakLayakHuniController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\MasterAsetController;
 
 // --- ROUTE UNTUK TAMU (YANG BELUM LOGIN) ---
 Route::middleware('guest')->group(function () {
@@ -42,6 +43,7 @@ Route::middleware('auth')->group(function () {
         'rtlh' => 'rumahTidakLayakHuni'
     ]);
     Route::resource('cv', App\Http\Controllers\CvController::class);
+    Route::resource('asets', MasterAsetController::class);
     // ->names([
     //     'index' => 'jalan_lingkungan.cv.index',
     //     'create' => 'jalan_lingkungan.cv.create',
@@ -70,6 +72,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/peta-sebaran', [MapController::class, 'index'])->name('map.index');
     Route::get('/rtlh/export/new', [RumahTidakLayakHuniController::class, 'export'])->name('rtlh.export');
     Route::get('/jalan-lingkungan/export/new', [JalanLingkunganController::class, 'export'])->name('jalanlingkungan.export');
+
+    Route::post('/rtlh/import', [RumahTidakLayakHuniController::class, 'importExcel'])->name('rtlh.import.excel');
+
 
 });
 

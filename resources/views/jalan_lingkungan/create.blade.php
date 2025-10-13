@@ -20,7 +20,7 @@
 
         {{-- Konten Form --}}
         <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-slate-200">
-            <form action="{{ route('jalan_lingkungan.store') }}" method="POST">
+            <form action="{{ route('jalan_lingkungan.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @include('jalan_lingkungan._form')
             </form>

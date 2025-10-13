@@ -1,6 +1,6 @@
 {{--
     File: resources/views/rtlh/_form.blade.php
-    Description: Komponen form lengkap untuk data RTLH, termasuk semua input fields dan tombol aksi.
+    Description: Komponen form lengkap untuk data RTLH, disesuaikan dengan skema database terbaru.
 --}}
 
 {{-- Menampilkan error validasi jika ada --}}
@@ -37,7 +37,6 @@
     <div>
         <label for="nik" class="block text-sm font-medium text-slate-700">NIK</label>
         <input type="text" name="nik" id="nik" value="{{ old('nik', $rumahTidakLayakHuni->nik ?? '') }}"
-            required
             class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
     </div>
 
@@ -45,7 +44,6 @@
     <div>
         <label for="umur" class="block text-sm font-medium text-slate-700">Umur (Tahun)</label>
         <input type="number" name="umur" id="umur" value="{{ old('umur', $rumahTidakLayakHuni->umur ?? '') }}"
-            required
             class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
     </div>
 
@@ -63,7 +61,7 @@
     {{-- Alamat --}}
     <div class="md:col-span-2">
         <label for="alamat" class="block text-sm font-medium text-slate-700">Alamat Lengkap</label>
-        <textarea name="alamat" id="alamat" rows="3" required
+        <textarea name="alamat" id="alamat" rows="3"
             class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">{{ old('alamat', $rumahTidakLayakHuni->alamat ?? '') }}</textarea>
     </div>
 
@@ -95,105 +93,221 @@
     </div>
 </div>
 
-{{-- SEKSI 2: DETAIL PROPERTI & STATUS BANTUAN --}}
+{{-- SEKSI 2: DETAIL & KONDISI PROPERTI --}}
 <div class="mt-8 pt-6 border-t border-slate-200">
     <h3 class="text-xl font-semibold text-midnight_green mb-6">
-        Detail Properti & Status Bantuan
+        Detail & Kondisi Properti
     </h3>
-    <div class="p-6 border border-slate-200 rounded-lg bg-slate-50 space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {{-- Luas Rumah --}}
-            <div>
-                <label for="luas_rumah" class="block text-sm font-medium text-slate-700">Luas Rumah (M²)</label>
-                <input type="number" step="0.01" name="luas_rumah" id="luas_rumah"
-                    value="{{ old('luas_rumah', $rumahTidakLayakHuni->luas_rumah ?? '') }}" required
-                    class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
-            </div>
-
-            {{-- Kategori Rumah --}}
-            <div>
-                <label for="kategori_rumah" class="block text-sm font-medium text-slate-700">Kategori Rumah</label>
-                <input type="text" name="kategori_rumah" id="kategori_rumah"
-                    value="{{ old('kategori_rumah', $rumahTidakLayakHuni->kategori_rumah ?? '') }}" required
-                    placeholder="Contoh: Rusak Ringan, Rusak Berat"
-                    class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
-            </div>
-
-            {{-- Kepemilikan Rumah --}}
-            <div>
-                <label for="kepemilikan_rumah" class="block text-sm font-medium text-slate-700">Kepemilikan
-                    Rumah</label>
-                <input type="text" name="kepemilikan_rumah" id="kepemilikan_rumah"
-                    value="{{ old('kepemilikan_rumah', $rumahTidakLayakHuni->kepemilikan_rumah ?? '') }}" required
-                    placeholder="Contoh: Milik Sendiri, Sewa"
-                    class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
-            </div>
-
-            {{-- Kepemilikan Tanah --}}
-            <div>
-                <label for="kepemilikan_tanah" class="block text-sm font-medium text-slate-700">Kepemilikan
-                    Tanah</label>
-                <input type="text" name="kepemilikan_tanah" id="kepemilikan_tanah"
-                    value="{{ old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') }}" required
-                    placeholder="Contoh: Milik Sendiri, Tanah Desa"
-                    class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
-            </div>
-
-            {{-- Koordinat --}}
-            <div class="md:col-span-2">
-                <label for="koordinat" class="block text-sm font-medium text-slate-700">Koordinat</label>
-                <input type="text" name="koordinat" id="koordinat"
-                    value="{{ old('koordinat', $rumahTidakLayakHuni->koordinat ?? '') }}" required
-                    placeholder="Contoh: -7.2575, 112.7521"
-                    class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
-            </div>
-
-            {{-- Status Bantuan --}}
-            <div class="md:col-span-2">
-                <label for="status" class="block text-sm font-medium text-slate-700">Status Bantuan</label>
-                <select name="status" id="status" required
-                    class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
-                    <option value="belum diperbaiki" @selected(old('status', $rumahTidakLayakHuni->status ?? 'belum diperbaiki') == 'belum diperbaiki')>Belum Diperbaiki</option>
-                    <option value="sedang diperbaiki" @selected(old('status', $rumahTidakLayakHuni->status ?? '') == 'sedang diperbaiki')>Sedang Diperbaiki</option>
-                    <option value="sudah diperbaiki" @selected(old('status', $rumahTidakLayakHuni->status ?? '') == 'sudah diperbaiki')>Sudah Diperbaiki</option>
-                </select>
-            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {{-- Luas Rumah --}}
+        <div>
+            <label for="luas_rumah" class="block text-sm font-medium text-slate-700">Luas Rumah (M²)</label>
+            <input type="number" step="0.01" name="luas_rumah" id="luas_rumah"
+                value="{{ old('luas_rumah', $rumahTidakLayakHuni->luas_rumah ?? '') }}"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
         </div>
 
-        {{-- DOKUMENTASI FOTO --}}
-        <div class="mt-6 border-t border-slate-300 pt-6">
-            <h4 class="text-md font-semibold text-slate-800 mb-4">Dokumentasi Foto</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- Foto Sebelum Perbaikan --}}
-                <div>
-                    <label for="foto_sebelum_perbaikan" class="block text-sm font-medium text-slate-700">Foto Sebelum
-                        Perbaikan</label>
-                    <input type="file" name="foto_sebelum_perbaikan" id="foto_sebelum_perbaikan"
-                        @if (!isset($rumahTidakLayakHuni)) required @endif
-                        class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
-                    @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_sebelum_perbaikan)
-                        <div class="mt-2">
-                            <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_sebelum_perbaikan) }}"
-                                alt="Foto Sebelum" class="rounded-md border border-slate-300 h-32 w-auto">
-                            <small class="text-xs text-slate-500">Kosongkan jika tidak ingin mengubah foto.</small>
-                        </div>
-                    @endif
-                </div>
+        {{-- Kepemilikan Tanah --}}
+        <div>
+            <label for="kepemilikan_tanah" class="block text-sm font-medium text-slate-700">Kepemilikan Tanah</label>
+            <select name="kepemilikan_tanah" id="kepemilikan_tanah" required
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Jenis Kepemilikan --</option>
+                <option value="Milik Sendiri" @selected(old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') == 'Milik Sendiri')>Milik Sendiri</option>
+                <option value="Warisan" @selected(old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') == 'Warisan')>Warisan</option>
+                <option value="Hibah" @selected(old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') == 'Hibah')>Hibah</option>
+                <option value="Sewa / Kontrak" @selected(old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') == 'Sewa / Kontrak')>Sewa / Kontrak</option>
+                <option value="Menumpang" @selected(old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') == 'Menumpang')>Menumpang</option>
+                <option value="Tanah Negara / Aset Pemerintah" @selected(old('kepemilikan_tanah', $rumahTidakLayakHuni->kepemilikan_tanah ?? '') == 'Tanah Negara / Aset Pemerintah')>Tanah Negara / Aset
+                    Pemerintah</option>
+            </select>
+        </div>
 
-                {{-- Foto Sesudah Perbaikan --}}
-                <div>
-                    <label for="foto_sesudah_perbaikan" class="block text-sm font-medium text-slate-700">Foto Sesudah
-                        Perbaikan</label>
-                    <input type="file" name="foto_sesudah_perbaikan" id="foto_sesudah_perbaikan"
-                        class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
-                    @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_sesudah_perbaikan)
-                        <div class="mt-2">
-                            <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_sesudah_perbaikan) }}"
-                                alt="Foto Sesudah" class="rounded-md border border-slate-300 h-32 w-auto">
-                            <small class="text-xs text-slate-500">Kosongkan jika tidak ingin mengubah foto.</small>
-                        </div>
-                    @endif
+        {{-- No Sertifikat --}}
+        <div id="no_sertifikat_container">
+            <label for="no_sertifikat" class="block text-sm font-medium text-slate-700">No. Dokumen/Sertifikat</label>
+            <input type="text" name="no_sertifikat" id="no_sertifikat"
+                value="{{ old('no_sertifikat', $rumahTidakLayakHuni->no_sertifikat ?? '') }}"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+        </div>
+
+        {{-- Kondisi Atap --}}
+        <div>
+            <label for="kondisi_atap" class="block text-sm font-medium text-slate-700">Kondisi Atap</label>
+            <select name="kondisi_atap" id="kondisi_atap"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Kondisi --</option>
+                <option value="Baik" @selected(old('kondisi_atap', $rumahTidakLayakHuni->kondisi_atap ?? '') == 'Baik')>Baik</option>
+                <option value="Rusak Ringan" @selected(old('kondisi_atap', $rumahTidakLayakHuni->kondisi_atap ?? '') == 'Rusak Ringan')>Rusak Ringan</option>
+                <option value="Rusak Berat" @selected(old('kondisi_atap', $rumahTidakLayakHuni->kondisi_atap ?? '') == 'Rusak Berat')>Rusak Berat</option>
+                <option value="Tidak Ada" @selected(old('kondisi_atap', $rumahTidakLayakHuni->kondisi_atap ?? '') == 'Tidak Ada')>Tidak Ada</option>
+            </select>
+        </div>
+
+        {{-- Kondisi Dinding --}}
+        <div>
+            <label for="kondisi_dinding" class="block text-sm font-medium text-slate-700">Kondisi Dinding</label>
+            <select name="kondisi_dinding" id="kondisi_dinding"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Kondisi --</option>
+                <option value="Baik" @selected(old('kondisi_dinding', $rumahTidakLayakHuni->kondisi_dinding ?? '') == 'Baik')>Baik</option>
+                <option value="Rusak Ringan" @selected(old('kondisi_dinding', $rumahTidakLayakHuni->kondisi_dinding ?? '') == 'Rusak Ringan')>Rusak Ringan</option>
+                <option value="Rusak Berat" @selected(old('kondisi_dinding', $rumahTidakLayakHuni->kondisi_dinding ?? '') == 'Rusak Berat')>Rusak Berat</option>
+                <option value="Tidak Ada" @selected(old('kondisi_dinding', $rumahTidakLayakHuni->kondisi_dinding ?? '') == 'Tidak Ada')>Tidak Ada</option>
+            </select>
+        </div>
+
+        {{-- Kondisi Lantai --}}
+        <div>
+            <label for="kondisi_lantai" class="block text-sm font-medium text-slate-700">Kondisi Lantai</label>
+            <select name="kondisi_lantai" id="kondisi_lantai"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Kondisi --</option>
+                <option value="Baik" @selected(old('kondisi_lantai', $rumahTidakLayakHuni->kondisi_lantai ?? '') == 'Baik')>Baik</option>
+                <option value="Rusak Ringan" @selected(old('kondisi_lantai', $rumahTidakLayakHuni->kondisi_lantai ?? '') == 'Rusak Ringan')>Rusak Ringan</option>
+                <option value="Rusak Berat" @selected(old('kondisi_lantai', $rumahTidakLayakHuni->kondisi_lantai ?? '') == 'Rusak Berat')>Rusak Berat</option>
+                <option value="Tidak Ada" @selected(old('kondisi_lantai', $rumahTidakLayakHuni->kondisi_lantai ?? '') == 'Tidak Ada')>Tidak Ada</option>
+            </select>
+        </div>
+
+        {{-- Sumber Air --}}
+        <div>
+            <label for="sumber_air" class="block text-sm font-medium text-slate-700">Sumber Air Bersih</label>
+            <select name="sumber_air" id="sumber_air"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Sumber Air --</option>
+                <option value="PDAM" @selected(old('sumber_air', $rumahTidakLayakHuni->sumber_air ?? '') == 'PDAM')>PDAM</option>
+                <option value="Sumur Terlindungi" @selected(old('sumber_air', $rumahTidakLayakHuni->sumber_air ?? '') == 'Sumur Terlindungi')>Sumur Terlindungi</option>
+                <option value="Sumur Tidak Terlindungi" @selected(old('sumber_air', $rumahTidakLayakHuni->sumber_air ?? '') == 'Sumur Tidak Terlindungi')>Sumur Tidak Terlindungi</option>
+                <option value="Air Hujan" @selected(old('sumber_air', $rumahTidakLayakHuni->sumber_air ?? '') == 'Air Hujan')>Air Hujan</option>
+                <option value="Sungai/Danau" @selected(old('sumber_air', $rumahTidakLayakHuni->sumber_air ?? '') == 'Sungai/Danau')>Sungai/Danau</option>
+                <option value="Lainnya" @selected(old('sumber_air', $rumahTidakLayakHuni->sumber_air ?? '') == 'Lainnya')>Lainnya</option>
+            </select>
+        </div>
+
+        {{-- Sanitasi/WC --}}
+        <div>
+            <label for="sanitasi_wc" class="block text-sm font-medium text-slate-700">Sanitasi / WC</label>
+            <select name="sanitasi_wc" id="sanitasi_wc"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Kondisi --</option>
+                <option value="Baik" @selected(old('sanitasi_wc', $rumahTidakLayakHuni->sanitasi_wc ?? '') == 'Baik')>Baik</option>
+                <option value="Rusak Ringan" @selected(old('sanitasi_wc', $rumahTidakLayakHuni->sanitasi_wc ?? '') == 'Rusak Ringan')>Rusak Ringan</option>
+                <option value="Rusak Berat" @selected(old('sanitasi_wc', $rumahTidakLayakHuni->sanitasi_wc ?? '') == 'Rusak Berat')>Rusak Berat</option>
+                <option value="Tidak Ada" @selected(old('sanitasi_wc', $rumahTidakLayakHuni->sanitasi_wc ?? '') == 'Tidak Ada')>Tidak Ada</option>
+            </select>
+        </div>
+
+        {{-- Dapur --}}
+        <div class="md:col-span-2">
+            <label for="dapur" class="block text-sm font-medium text-slate-700">Kondisi Dapur</label>
+            <select name="dapur" id="dapur"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+                <option value="">-- Pilih Kondisi --</option>
+                <option value="Baik" @selected(old('dapur', $rumahTidakLayakHuni->dapur ?? '') == 'Baik')>Baik</option>
+                <option value="Rusak Ringan" @selected(old('dapur', $rumahTidakLayakHuni->dapur ?? '') == 'Rusak Ringan')>Rusak Ringan</option>
+                <option value="Rusak Berat" @selected(old('dapur', $rumahTidakLayakHuni->dapur ?? '') == 'Rusak Berat')>Rusak Berat</option>
+                <option value="Tidak Ada" @selected(old('dapur', $rumahTidakLayakHuni->dapur ?? '') == 'Tidak Ada')>Tidak Ada</option>
+            </select>
+        </div>
+
+        {{-- Koordinat --}}
+        <div class="md:col-span-2">
+            <label for="koordinat" class="block text-sm font-medium text-slate-700">Koordinat</label>
+            <input type="text" name="koordinat" id="koordinat"
+                value="{{ old('koordinat', $rumahTidakLayakHuni->koordinat ?? '') }}"
+                placeholder="Contoh: -7.2575, 112.7521"
+                class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-midnight_green-300 focus:border-midnight_green-300 sm:text-sm">
+        </div>
+    </div>
+</div>
+
+{{-- SEKSI 3: DOKUMENTASI FOTO --}}
+<div class="mt-8 pt-6 border-t border-slate-200">
+    <h3 class="text-xl font-semibold text-midnight_green mb-6">
+        Dokumentasi Foto
+    </h3>
+    <div class="space-y-6">
+        {{-- Foto Rumah --}}
+        <div>
+            <label for="foto_rumah" class="block text-sm font-medium text-slate-700">Foto Rumah (Tampak Depan)</label>
+            <input type="file" name="foto_rumah" id="foto_rumah"
+                class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
+            @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_rumah)
+                <div class="mt-2">
+                    <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_rumah) }}" alt="Foto Rumah"
+                        class="rounded-md border border-slate-300 h-32 w-auto">
+                    <small class="text-xs text-slate-500">Kosongkan jika tidak ingin mengubah foto.</small>
                 </div>
+            @endif
+        </div>
+
+        {{-- Foto Kondisi --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 border-t border-dashed">
+            {{-- Foto Atap --}}
+            <div>
+                <label for="foto_kondisi_atap" class="block text-sm font-medium text-slate-700">Foto Kondisi
+                    Atap</label>
+                <input type="file" name="foto_kondisi_atap" id="foto_kondisi_atap"
+                    class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
+                @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_kondisi_atap)
+                    <div class="mt-2">
+                        <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_kondisi_atap) }}" alt="Foto Atap"
+                            class="rounded-md border border-slate-300 h-32 w-auto">
+                    </div>
+                @endif
+            </div>
+            {{-- Foto Dinding --}}
+            <div>
+                <label for="foto_kondisi_dinding" class="block text-sm font-medium text-slate-700">Foto Kondisi
+                    Dinding</label>
+                <input type="file" name="foto_kondisi_dinding" id="foto_kondisi_dinding"
+                    class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
+                @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_kondisi_dinding)
+                    <div class="mt-2">
+                        <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_kondisi_dinding) }}"
+                            alt="Foto Dinding" class="rounded-md border border-slate-300 h-32 w-auto">
+                    </div>
+                @endif
+            </div>
+            {{-- Foto Lantai --}}
+            <div>
+                <label for="foto_kondisi_lantai" class="block text-sm font-medium text-slate-700">Foto Kondisi
+                    Lantai</label>
+                <input type="file" name="foto_kondisi_lantai" id="foto_kondisi_lantai"
+                    class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
+                @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_kondisi_lantai)
+                    <div class="mt-2">
+                        <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_kondisi_lantai) }}"
+                            alt="Foto Lantai" class="rounded-md border border-slate-300 h-32 w-auto">
+                    </div>
+                @endif
+            </div>
+            {{-- Foto WC --}}
+            <div>
+                <label for="foto_sanitasi_wc" class="block text-sm font-medium text-slate-700">Foto Sanitasi /
+                    WC</label>
+                <input type="file" name="foto_sanitasi_wc" id="foto_sanitasi_wc"
+                    class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
+                @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_sanitasi_wc)
+                    <div class="mt-2">
+                        <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_sanitasi_wc) }}" alt="Foto WC"
+                            class="rounded-md border border-slate-300 h-32 w-auto">
+                    </div>
+                @endif
+            </div>
+            {{-- Foto Dapur --}}
+            <div>
+                <label for="foto_kondisi_dapur" class="block text-sm font-medium text-slate-700">Foto Kondisi
+                    Dapur</label>
+                <input type="file" name="foto_kondisi_dapur" id="foto_kondisi_dapur"
+                    class="mt-1 block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer bg-white focus:outline-none file:bg-slate-200 file:text-slate-700 file:border-0 file:px-4 file:py-1.5 file:mr-4">
+                @if (isset($rumahTidakLayakHuni) && $rumahTidakLayakHuni->foto_kondisi_dapur)
+                    <div class="mt-2">
+                        <img src="{{ asset('storage/' . $rumahTidakLayakHuni->foto_kondisi_dapur) }}"
+                            alt="Foto Dapur" class="rounded-md border border-slate-300 h-32 w-auto">
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -266,11 +380,9 @@
                 ]
             };
 
-            // Mengambil nilai lama (jika ada error validasi) atau nilai dari database
             const oldKecamatan = "{{ old('kecamatan', $rumahTidakLayakHuni->kecamatan ?? '') }}";
             const oldDesa = "{{ old('desa_kelurahan', $rumahTidakLayakHuni->desa_kelurahan ?? '') }}";
 
-            // Mengisi dropdown kecamatan saat halaman dimuat
             for (const kecamatan in data) {
                 const option = document.createElement('option');
                 option.value = kecamatan;
@@ -281,9 +393,7 @@
                 kecamatanSelect.appendChild(option);
             }
 
-            // Fungsi untuk mengisi dropdown desa berdasarkan kecamatan yang dipilih
-            function populateDesa(selectedKecamatan) {
-                // Hapus semua opsi desa yang ada
+            function populateDesa(selectedKecamatan, currentDesa) {
                 desaSelect.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
 
                 if (selectedKecamatan && data[selectedKecamatan]) {
@@ -295,31 +405,42 @@
                         const option = document.createElement('option');
                         option.value = desa;
                         option.textContent = desa;
-                        // Pilih desa jika cocok dengan data lama/database
-                        if (desa === oldDesa) {
+                        if (desa === currentDesa) {
                             option.selected = true;
                         }
                         desaSelect.appendChild(option);
                     });
                 } else {
-                    // Nonaktifkan jika tidak ada kecamatan yang dipilih
                     desaSelect.disabled = true;
                     desaSelect.classList.add('bg-slate-50', 'cursor-not-allowed');
                     desaSelect.innerHTML = '<option value="">Pilih Kecamatan Terlebih Dahulu</option>';
                 }
             }
 
-            // Event listener untuk memanggil fungsi populateDesa saat kecamatan berubah
             kecamatanSelect.addEventListener('change', function() {
-                // Reset oldDesa saat kecamatan berubah agar tidak memilih desa dari kecamatan sebelumnya
-                const oldDesa = '';
-                populateDesa(this.value);
+                populateDesa(this.value, '');
             });
 
-            // Panggil fungsi populateDesa saat halaman pertama kali dimuat jika sudah ada kecamatan yang terpilih
             if (oldKecamatan) {
-                populateDesa(oldKecamatan);
+                populateDesa(oldKecamatan, oldDesa);
             }
+
+            // Script untuk menampilkan/menyembunyikan field No. Sertifikat
+            const kepemilikanTanahSelect = document.getElementById('kepemilikan_tanah');
+            const noSertifikatContainer = document.getElementById('no_sertifikat_container');
+            const optionsWithNumber = ['Milik Sendiri', 'Warisan', 'Hibah'];
+
+            function toggleNoSertifikatField() {
+                const selectedValue = kepemilikanTanahSelect.value;
+                if (optionsWithNumber.includes(selectedValue)) {
+                    noSertifikatContainer.style.display = 'block';
+                } else {
+                    noSertifikatContainer.style.display = 'none';
+                }
+            }
+
+            kepemilikanTanahSelect.addEventListener('change', toggleNoSertifikatField);
+            toggleNoSertifikatField(); // Panggil saat halaman dimuat
         });
     </script>
 @endpush

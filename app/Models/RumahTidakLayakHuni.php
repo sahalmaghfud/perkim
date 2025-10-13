@@ -25,18 +25,27 @@ class RumahTidakLayakHuni extends Model
         'nama_kepala_ruta',
         'nik',
         'umur',
+        'alamat',
+        'luas_rumah',
         'kode_wilayah',
         'kecamatan',
         'desa_kelurahan',
-        'alamat',
         'jenis_kelamin',
-        'kategori_rumah',
-        'luas_rumah',
-        'kepemilikan_rumah',
         'kepemilikan_tanah',
-        'foto_sebelum_perbaikan',
-        'foto_sesudah_perbaikan',
+        'no_sertifikat',
+        'kondisi_lantai',
+        'kondisi_dinding',
+        'kondisi_atap', // Kolom baru
+        'sumber_air',
+        'sanitasi_wc',
+        'dapur',
         'koordinat',
-        'status',
+        'foto_rumah', // Diganti dari foto_sebelum_perbaikan
+        'foto_kondisi_lantai', // Kolom baru
+        'foto_kondisi_dinding', // Kolom baru
+        'foto_kondisi_atap', // Kolom baru
+        'foto_sanitasi_wc', // Kolom baru
+        'foto_kondisi_dapur', // Kolom baru
     ];
 }
+

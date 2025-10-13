@@ -31,72 +31,187 @@
             </div>
         </div>
 
-        {{-- Konten Detail --}}
-        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-slate-200">
-
-            {{-- SEKSI 1: RINCIAN PEKERJAAN & KEUANGAN --}}
-            <div class="mb-8">
-                <h3 class="text-xl font-semibold text-midnight_green border-b border-slate-200 pb-4 mb-4">
-                    Rincian Pekerjaan & Keuangan
-                </h3>
-                <div class="divide-y divide-slate-200">
-                    @php
-                        $details = [
-                            'Uraian Pekerjaan' => $jalanLingkungan->uraian,
-                            'Volume' => $jalanLingkungan->volume . ' ' . $jalanLingkungan->satuan,
-                            'Harga Satuan' => 'Rp ' . number_format($jalanLingkungan->harga_satuan, 0, ',', '.'),
-                            'Jumlah Harga' => 'Rp ' . number_format($jalanLingkungan->jumlah_harga, 0, ',', '.'),
-                        ];
-                    @endphp
-                    @foreach ($details as $label => $value)
-                        <div class="flex flex-col sm:flex-row justify-between sm:items-center py-3">
-                            <span class="text-sm font-medium text-slate-600 w-full sm:w-1/3">{{ $label }}</span>
-                            <span
-                                class="text-sm text-slate-900 font-semibold text-left sm:text-right w-full sm:w-2/3">{{ $value ?? '—' }}</span>
-                        </div>
-                    @endforeach
+        {{-- Grid Konten Utama --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {{-- Kolom Kiri (Detail Utama) --}}
+            <div class="lg:col-span-2 space-y-8">
+                {{-- Card: Detail Pekerjaan & Lokasi --}}
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h4 class="text-xl font-semibold text-midnight_green">
+                            <i class="fas fa-road mr-2"></i> Detail Pekerjaan & Lokasi
+                        </h4>
+                    </div>
+                    <div class="p-6 divide-y divide-slate-100">
+                        @php
+                            $jobDetails = [
+                                'Uraian Pekerjaan' => $jalanLingkungan->uraian,
+                                'Kecamatan' => $jalanLingkungan->kecamatan,
+                                'Desa/Kelurahan' => $jalanLingkungan->desa,
+                                'Alamat Lengkap' => $jalanLingkungan->alamat,
+                                'Volume' => $jalanLingkungan->volume
+                                    ? $jalanLingkungan->volume . ' ' . $jalanLingkungan->satuan
+                                    : null,
+                            ];
+                        @endphp
+                        @foreach ($jobDetails as $label => $value)
+                            @include('jalan_lingkungan._detail_row', [
+                                'label' => $label,
+                                'value' => $value,
+                            ])
+                        @endforeach
+                    </div>
                 </div>
+
+                {{-- Card: Detail Kontrak & Berita Acara --}}
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h4 class="text-xl font-semibold text-midnight_green">
+                            <i class="fas fa-file-signature mr-2"></i> Detail Kontrak & Berita Acara
+                        </h4>
+                    </div>
+                    <div class="p-6 divide-y divide-slate-100">
+                        @php
+                            $contractDetails = [
+                                'Nomor Kontrak' => $jalanLingkungan->nomor_kontrak,
+                                'Tanggal Kontrak' => $jalanLingkungan->tanggal_kontrak
+                                    ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_kontrak)->translatedFormat(
+                                        'd F Y',
+                                    )
+                                    : null,
+                                'Tanggal Awal Pekerjaan' => $jalanLingkungan->tanggal_awal_pekerjaan
+                                    ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_awal_pekerjaan)->translatedFormat(
+                                        'd F Y',
+                                    )
+                                    : null,
+                                'Tanggal Akhir Pekerjaan' => $jalanLingkungan->tanggal_akhir_pekerjaan
+                                    ? \Carbon\Carbon::parse(
+                                        $jalanLingkungan->tanggal_akhir_pekerjaan,
+                                    )->translatedFormat('d F Y')
+                                    : null,
+                                'Nomor BAPHP' => $jalanLingkungan->baphp_nomor,
+                                'Tanggal BAPHP' => $jalanLingkungan->baphp_tanggal
+                                    ? \Carbon\Carbon::parse($jalanLingkungan->baphp_tanggal)->translatedFormat('d F Y')
+                                    : null,
+                                'Nomor BAST' => $jalanLingkungan->bast_nomor,
+                                'Tanggal BAST' => $jalanLingkungan->bast_tanggal
+                                    ? \Carbon\Carbon::parse($jalanLingkungan->bast_tanggal)->translatedFormat('d F Y')
+                                    : null,
+                            ];
+                        @endphp
+                        @foreach ($contractDetails as $label => $value)
+                            @include('jalan_lingkungan._detail_row', [
+                                'label' => $label,
+                                'value' => $value,
+                            ])
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Card: Dokumentasi Foto --}}
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h4 class="text-xl font-semibold text-midnight_green">
+                            <i class="fas fa-camera-retro mr-2"></i> Dokumentasi Foto
+                        </h4>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-2">Foto Sebelum</h5>
+                            @if ($jalanLingkungan->foto_sebelum)
+                                <a href="{{ asset('storage/' . $jalanLingkungan->foto_sebelum) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $jalanLingkungan->foto_sebelum) }}" alt="Foto Sebelum"
+                                        class="rounded-lg shadow-md w-full h-auto object-cover hover:opacity-90 transition">
+                                </a>
+                            @else
+                                <div class="flex items-center justify-center h-48 bg-slate-100 rounded-lg text-slate-500">
+                                    <span>Tidak ada foto</span>
+                                </div>
+                            @endif
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-2">Foto Sesudah</h5>
+                            @if ($jalanLingkungan->foto_sesudah)
+                                <a href="{{ asset('storage/' . $jalanLingkungan->foto_sesudah) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $jalanLingkungan->foto_sesudah) }}" alt="Foto Sesudah"
+                                        class="rounded-lg shadow-md w-full h-auto object-cover hover:opacity-90 transition">
+                                </a>
+                            @else
+                                <div class="flex items-center justify-center h-48 bg-slate-100 rounded-lg text-slate-500">
+                                    <span>Tidak ada foto</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Keterangan --}}
+                @if ($jalanLingkungan->keterangan)
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                        <div class="p-6 border-b border-slate-200">
+                            <h4 class="text-xl font-semibold text-midnight_green">
+                                <i class="fas fa-info-circle mr-2"></i> Keterangan
+                            </h4>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $jalanLingkungan->keterangan }}</p>
+                        </div>
+                    </div>
+                @endif
             </div>
 
-            {{-- SEKSI 2: DETAIL KONTRAK --}}
-            <div>
-                <h3 class="text-xl font-semibold text-midnight_green border-b border-slate-200 pb-4 mb-4">
-                    Detail Kontrak
-                </h3>
-                <div class="divide-y divide-slate-200">
-                    @php
-                        $contractDetails = [
-                            'CV Pelaksana' => $jalanLingkungan->cv->nama_cv ?? 'N/A',
-                            'Nomor Kontrak' => $jalanLingkungan->nomor_kontrak,
-                            'Tanggal Kontrak' => $jalanLingkungan->tanggal_kontrak
-                                ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_kontrak)->translatedFormat('d F Y')
-                                : null,
-                            'Nilai Kontrak' => $jalanLingkungan->nilai_kontrak
-                                ? 'Rp ' . number_format($jalanLingkungan->nilai_kontrak, 0, ',', '.')
-                                : null,
-                            'Tanggal Awal Pekerjaan' => $jalanLingkungan->tanggal_awal_pekerjaan
-                                ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_awal_pekerjaan)->translatedFormat(
-                                    'd F Y',
-                                )
-                                : null,
-                            'Tanggal Akhir Pekerjaan' => $jalanLingkungan->tanggal_akhir_pekerjaan
-                                ? \Carbon\Carbon::parse($jalanLingkungan->tanggal_akhir_pekerjaan)->translatedFormat(
-                                    'd F Y',
-                                )
-                                : null,
-                            'Keterangan' => $jalanLingkungan->keterangan,
-                        ];
-                    @endphp
-                    @foreach ($contractDetails as $label => $value)
-                        <div class="flex flex-col sm:flex-row justify-between sm:items-center py-3">
-                            <span class="text-sm font-medium text-slate-600 w-full sm:w-1/3">{{ $label }}</span>
-                            <span
-                                class="text-sm text-slate-900 font-semibold text-left sm:text-right w-full sm:w-2/3">{{ $value ?? '—' }}</span>
-                        </div>
-                    @endforeach
+            {{-- Kolom Kanan (Keuangan & Pencairan) --}}
+            <div class="lg:col-span-1 space-y-8">
+                {{-- Card: Detail Keuangan --}}
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h4 class="text-xl font-semibold text-midnight_green">
+                            <i class="fas fa-wallet mr-2"></i> Rincian Keuangan
+                        </h4>
+                    </div>
+                    <div class="p-6 divide-y divide-slate-100">
+                        @php
+                            $financeDetails = [
+                                'Harga Satuan' => $jalanLingkungan->harga_satuan,
+                                'Jumlah Harga' => $jalanLingkungan->jumlah_harga,
+                                'Nilai Kontrak' => $jalanLingkungan->nilai_kontrak,
+                            ];
+                        @endphp
+                        @foreach ($financeDetails as $label => $value)
+                            @include('jalan_lingkungan._detail_row', [
+                                'label' => $label,
+                                'value' => $value ? 'Rp ' . number_format($value, 2, ',', '.') : null,
+                                'isCurrency' => true,
+                            ])
+                        @endforeach
+                    </div>
                 </div>
-            </div>
 
+                {{-- Card: Realisasi Pencairan --}}
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h4 class="text-xl font-semibold text-midnight_green">
+                            <i class="fas fa-cash-register mr-2"></i> Realisasi Pencairan
+                        </h4>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        @include('jalan_lingkungan._detail_pencairan_card', [
+                            'stage' => '30',
+                            'title' => 'Tahap 30%',
+                        ])
+                        @include('jalan_lingkungan._detail_pencairan_card', [
+                            'stage' => '95',
+                            'title' => 'Tahap 95%',
+                        ])
+                        @include('jalan_lingkungan._detail_pencairan_card', [
+                            'stage' => '100',
+                            'title' => 'Tahap 100%',
+                        ])
+                    </div>
+
+                </div>
+
+            </div>
         </div>
     </div>
 @endsection

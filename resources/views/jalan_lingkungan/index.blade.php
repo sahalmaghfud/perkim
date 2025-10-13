@@ -37,32 +37,47 @@
     <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
         <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
             <i class="fas fa-filter text-midnight_green mr-3"></i>
-            Filter & Pencarian
+            Filter Data
         </h3>
         <form action="{{ route('jalan_lingkungan.index') }}" method="GET">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                {{-- Search Input --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                {{-- Kecamatan Filter --}}
                 <div>
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari Data</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                        <input type="text" name="search" id="search"
-                            class="w-full pl-10 border-gray-300 rounded-lg shadow-sm focus:ring-midnight_green focus:border-midnight_green"
-                            placeholder="Cari Uraian, No. Kontrak, atau CV..." value="{{ request('search') }}">
-                    </div>
+                    <label for="kecamatan" class="block text-sm font-medium text-gray-700 mb-1">Filter Kecamatan</label>
+                    <select name="kecamatan" id="kecamatan"
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-midnight_green focus:border-midnight_green">
+                        <option value="">-- Semua Kecamatan --</option>
+                        @foreach ($kecamatans as $item)
+                            <option value="{{ $item->kecamatan }}" @selected(request('kecamatan') == $item->kecamatan)>
+                                {{ $item->kecamatan }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
-                {{-- CV Filter --}}
+                {{-- Desa Filter --}}
                 <div>
-                    <label for="cv_id" class="block text-sm font-medium text-gray-700 mb-1">Filter Berdasarkan CV</label>
-                    <select name="cv_id" id="cv_id"
+                    <label for="desa" class="block text-sm font-medium text-gray-700 mb-1">Filter Desa</label>
+                    <select name="desa" id="desa"
                         class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-midnight_green focus:border-midnight_green">
-                        <option value="">-- Semua CV --</option>
-                        @foreach ($cvs as $cv)
-                            <option value="{{ $cv->id }}" @selected(request('cv_id') == $cv->id)>
-                                {{ $cv->nama_cv }}
+                        <option value="">-- Semua Desa --</option>
+                        @foreach ($desas as $item)
+                            <option value="{{ $item->desa }}" @selected(request('desa') == $item->desa)>
+                                {{ $item->desa }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Tahun Filter --}}
+                <div>
+                    <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Filter Tahun</label>
+                    <select name="tahun" id="tahun"
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-midnight_green focus:border-midnight_green">
+                        <option value="">-- Semua Tahun --</option>
+                        @foreach ($tahuns as $item)
+                            <option value="{{ $item->tahun }}" @selected(request('tahun') == $item->tahun)>
+                                {{ $item->tahun }}
                             </option>
                         @endforeach
                     </select>
@@ -81,7 +96,7 @@
                         class="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-5 rounded-lg transition-all duration-300 border border-gray-300 shadow-sm transform hover:scale-105">
                         Reset
                     </a>
-                    <a href="{{ route('jalanlingkungan.export') }}"
+                    <a href="{{ route('jalanlingkungan.export', request()->query()) }}"
                         class="bg-midnight_green hover:bg-midnight_green-600 text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 shadow-md transform hover:scale-105 flex items-center gap-2">
                         <i class="fas fa-file-alt fa-fw"></i>
                         <span>Export Data</span>
@@ -119,9 +134,9 @@
                         <th class="px-6 py-3 text-left text-xs font-bold text-midnight_green-400 uppercase tracking-wider">
                             CV Pelaksana</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-midnight_green-400 uppercase tracking-wider">
-                            Nomor Kontrak</th>
+                            Lokasi</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-midnight_green-400 uppercase tracking-wider">
-                            Jumlah Harga</th>
+                            Nilai Kontrak</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-midnight_green-400 uppercase tracking-wider">
                             Aksi</th>
                     </tr>
@@ -133,9 +148,13 @@
                                 {{ $loop->iteration + $jalanLingkungans->firstItem() - 1 }}</td>
                             <td class="px-6 py-4 text-sm text-midnight_green-200 font-medium">{{ $item->uraian }}</td>
                             <td class="px-6 py-4 text-sm text-gray-700">{{ $item->cv->nama_cv ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-700">{{ $item->nomor_kontrak ?? '—' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-700 font-semibold">Rp
-                                {{ number_format($item->jumlah_harga, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                <div class="font-semibold">{{ $item->kecamatan }}</div>
+                                <div class="text-xs text-gray-500">{{ $item->desa }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700 font-semibold">
+                                {{ $item->nilai_kontrak ? 'Rp ' . number_format($item->nilai_kontrak, 0, ',', '.') : '—' }}
+                            </td>
                             <td class="px-6 py-4 text-sm font-medium flex items-center gap-2">
                                 <a href="{{ route('jalan_lingkungan.show', $item->id) }}" title="Lihat"
                                     class="text-gray-500 hover:text-midnight_green p-2 w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 transform hover:scale-110">

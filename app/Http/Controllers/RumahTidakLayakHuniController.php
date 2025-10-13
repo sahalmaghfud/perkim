@@ -7,7 +7,9 @@ use App\Models\RumahTidakLayakHuni;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-
+use Illuminate\Support\Str;
+use App\Imports\RumahTidakLayakHuniImport;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class RumahTidakLayakHuniController extends Controller
 {
@@ -19,6 +21,7 @@ class RumahTidakLayakHuniController extends Controller
         // Ambil data unik untuk dropdown filter
         $kecamatans = RumahTidakLayakHuni::select('kecamatan')->whereNotNull('kecamatan')->distinct()->orderBy('kecamatan')->get();
         $desas = RumahTidakLayakHuni::select('desa_kelurahan')->whereNotNull('desa_kelurahan')->distinct()->orderBy('desa_kelurahan')->get();
+        $kepemilikanTanahOptions = RumahTidakLayakHuni::select('kepemilikan_tanah')->whereNotNull('kepemilikan_tanah')->distinct()->orderBy('kepemilikan_tanah')->get();
 
         $query = RumahTidakLayakHuni::query();
 
@@ -28,26 +31,27 @@ class RumahTidakLayakHuniController extends Controller
                 ->orWhere('nik', 'like', "%{$search}%");
         });
 
-        // Terapkan filter jika ada input 'status'
-        $query->when($request->status, function ($q, $status) {
-            return $q->where('status', $status);
-        });
-
-        // BARU: Terapkan filter untuk kecamatan
+        // Terapkan filter untuk kecamatan
         $query->when($request->kecamatan, function ($q, $kecamatan) {
             return $q->where('kecamatan', $kecamatan);
         });
 
-        // BARU: Terapkan filter untuk desa/kelurahan
+        // Terapkan filter untuk desa/kelurahan
         $query->when($request->desa_kelurahan, function ($q, $desa) {
             return $q->where('desa_kelurahan', $desa);
+        });
+
+        // BARU: Terapkan filter untuk kepemilikan tanah
+        $query->when($request->kepemilikan_tanah, function ($q, $kepemilikan) {
+            return $q->where('kepemilikan_tanah', $kepemilikan);
         });
 
         $data = $query->latest()->paginate(10)->withQueryString(); // withQueryString() agar filter tetap ada saat pindah halaman
 
         // Kirim semua data yang diperlukan ke view
-        return view('rtlh.index', compact('data', 'kecamatans', 'desas'));
+        return view('rtlh.index', compact('data', 'kecamatans', 'desas', 'kepemilikanTanahOptions'));
     }
+
 
     /**
      * Menampilkan form untuk membuat data baru.
@@ -64,38 +68,52 @@ class RumahTidakLayakHuniController extends Controller
     {
         $validatedData = $request->validate([
             'nama_kepala_ruta' => 'required|string|max:255',
-            'nik' => 'required|string|unique:rumah_tidak_layak_huni|max:16',
-            'umur' => 'required|integer',
-            'alamat' => 'required|string',
-            'jenis_kelamin' => 'required|in:L,P',
+            'nik' => 'nullable|string|unique:rumah_tidak_layak_huni|max:16',
+            'umur' => 'nullable|integer',
+            'alamat' => 'nullable|string',
+            'luas_rumah' => 'nullable|numeric',
+            'kode_wilayah' => 'required|string',
             'kecamatan' => 'required|string',
             'desa_kelurahan' => 'required|string',
-            'luas_rumah' => 'required|numeric',
-            'status' => 'required|in:sudah diperbaiki,sedang diperbaiki,belum diperbaiki',
-            'foto_sebelum_perbaikan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'foto_sesudah_perbaikan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            // Tambahkan validasi untuk field lain jika diperlukan
-            'kode_wilayah' => 'nullable|string',
-            'kategori_rumah' => 'nullable|string',
-            'kepemilikan_rumah' => 'nullable|string',
-            'kepemilikan_tanah' => 'nullable|string',
+            'jenis_kelamin' => 'required|in:L,P',
+            'kepemilikan_tanah' => 'required|string',
+            'no_sertifikat' => 'nullable|string',
+            'kondisi_lantai' => 'nullable|string',
+            'kondisi_dinding' => 'nullable|string',
+            'kondisi_atap' => 'nullable|string',
+            'sumber_air' => 'nullable|string',
+            'sanitasi_wc' => 'nullable|string',
+            'dapur' => 'nullable|string',
             'koordinat' => 'nullable|string',
+            'foto_rumah' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_lantai' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_dinding' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_atap' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_sanitasi_wc' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_dapur' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // Proses unggah file "sebelum"
-        if ($request->hasFile('foto_sebelum_perbaikan')) {
-            $file = $request->file('foto_sebelum_perbaikan');
-            $namaFile = $request->nik . '-sebelum-' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('rtlh', $namaFile, 'public');
-            $validatedData['foto_sebelum_perbaikan'] = $path;
-        }
+        $photoFields = [
+            'foto_rumah',
+            'foto_kondisi_lantai',
+            'foto_kondisi_dinding',
+            'foto_kondisi_atap',
+            'foto_sanitasi_wc',
+            'foto_kondisi_dapur'
+        ];
 
-        // Proses unggah file "sesudah"
-        if ($request->hasFile('foto_sesudah_perbaikan')) {
-            $file = $request->file('foto_sesudah_perbaikan');
-            $namaFile = $request->nik . '-sesudah-' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('rtlh', $namaFile, 'public');
-            $validatedData['foto_sesudah_perbaikan'] = $path;
+        // Membuat nama folder berdasarkan nama dan NIK
+        $folderNamePart = Str::slug($request->nama_kepala_ruta . '-' . ($request->nik ?? Str::random(5)));
+        $uploadPath = 'RTLH/' . $folderNamePart . '/kondisi';
+
+        foreach ($photoFields as $field) {
+            if ($request->hasFile($field)) {
+                $file = $request->file($field);
+                $fileName = $field . '-' . time() . '.' . $file->getClientOriginalExtension();
+                // Simpan file ke path yang baru
+                $path = $file->storeAs($uploadPath, $fileName, 'public');
+                $validatedData[$field] = $path;
+            }
         }
 
         RumahTidakLayakHuni::create($validatedData);
@@ -126,43 +144,57 @@ class RumahTidakLayakHuniController extends Controller
     {
         $validatedData = $request->validate([
             'nama_kepala_ruta' => 'required|string|max:255',
-            'nik' => 'required|string|max:16|unique:rumah_tidak_layak_huni,nik,' . $rumahTidakLayakHuni->id,
-            'umur' => 'required|integer',
-            'alamat' => 'required|string',
-            'jenis_kelamin' => 'required|in:L,P',
+            'nik' => 'nullable|string|max:16|unique:rumah_tidak_layak_huni,nik,' . $rumahTidakLayakHuni->id,
+            'umur' => 'nullable|integer',
+            'alamat' => 'nullable|string',
+            'luas_rumah' => 'nullable|numeric',
+            'kode_wilayah' => 'required|string',
             'kecamatan' => 'required|string',
             'desa_kelurahan' => 'required|string',
-            'luas_rumah' => 'required|numeric',
-            'status' => 'required|in:sudah diperbaiki,sedang diperbaiki,belum diperbaiki',
-            'foto_sebelum_perbaikan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'foto_sesudah_perbaikan' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'kode_wilayah' => 'string',
-            'kategori_rumah' => 'nullable|string',
-            'kepemilikan_rumah' => 'nullable|string',
-            'kepemilikan_tanah' => 'nullable|string',
+            'jenis_kelamin' => 'required|in:L,P',
+            'kepemilikan_tanah' => 'required|string',
+            'no_sertifikat' => 'nullable|string',
+            'kondisi_lantai' => 'nullable|string',
+            'kondisi_dinding' => 'nullable|string',
+            'kondisi_atap' => 'nullable|string',
+            'sumber_air' => 'nullable|string',
+            'sanitasi_wc' => 'nullable|string',
+            'dapur' => 'nullable|string',
             'koordinat' => 'nullable|string',
+            'foto_rumah' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_lantai' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_dinding' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_atap' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_sanitasi_wc' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_kondisi_dapur' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // Proses update file "sebelum"
-        if ($request->hasFile('foto_sebelum_perbaikan')) {
-            if ($rumahTidakLayakHuni->foto_sebelum_perbaikan) {
-                Storage::disk('public')->delete($rumahTidakLayakHuni->foto_sebelum_perbaikan);
-            }
-            $file = $request->file('foto_sebelum_perbaikan');
-            $namaFile = $request->nik . '-sebelum-' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('rtlh', $namaFile, 'public');
-            $validatedData['foto_sebelum_perbaikan'] = $path;
-        }
+        $photoFields = [
+            'foto_rumah',
+            'foto_kondisi_lantai',
+            'foto_kondisi_dinding',
+            'foto_kondisi_atap',
+            'foto_sanitasi_wc',
+            'foto_kondisi_dapur'
+        ];
 
-        // Proses update file "sesudah"
-        if ($request->hasFile('foto_sesudah_perbaikan')) {
-            if ($rumahTidakLayakHuni->foto_sesudah_perbaikan) {
-                Storage::disk('public')->delete($rumahTidakLayakHuni->foto_sesudah_perbaikan);
+        // Membuat nama folder berdasarkan nama dan NIK
+        $folderNamePart = Str::slug($request->nama_kepala_ruta . '-' . ($request->nik ?? $rumahTidakLayakHuni->id));
+        $uploadPath = 'RTLH/' . $folderNamePart . '/kondisi';
+
+        foreach ($photoFields as $field) {
+            if ($request->hasFile($field)) {
+                // Hapus foto lama jika ada
+                if ($rumahTidakLayakHuni->{$field}) {
+                    Storage::disk('public')->delete($rumahTidakLayakHuni->{$field});
+                }
+                // Simpan foto baru
+                $file = $request->file($field);
+                $fileName = $field . '-' . time() . '.' . $file->getClientOriginalExtension();
+                // Simpan file ke path yang baru
+                $path = $file->storeAs($uploadPath, $fileName, 'public');
+                $validatedData[$field] = $path;
             }
-            $file = $request->file('foto_sesudah_perbaikan');
-            $namaFile = $request->nik . '-sesudah-' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('rtlh', $namaFile, 'public');
-            $validatedData['foto_sesudah_perbaikan'] = $path;
         }
 
         $rumahTidakLayakHuni->update($validatedData);
@@ -175,12 +207,19 @@ class RumahTidakLayakHuniController extends Controller
      */
     public function destroy(RumahTidakLayakHuni $rumahTidakLayakHuni)
     {
-        // Hapus kedua foto jika ada
-        if ($rumahTidakLayakHuni->foto_sebelum_perbaikan) {
-            Storage::disk('public')->delete($rumahTidakLayakHuni->foto_sebelum_perbaikan);
-        }
-        if ($rumahTidakLayakHuni->foto_sesudah_perbaikan) {
-            Storage::disk('public')->delete($rumahTidakLayakHuni->foto_sesudah_perbaikan);
+        $photoFields = [
+            'foto_rumah',
+            'foto_kondisi_lantai',
+            'foto_kondisi_dinding',
+            'foto_kondisi_atap',
+            'foto_sanitasi_wc',
+            'foto_kondisi_dapur'
+        ];
+
+        foreach ($photoFields as $field) {
+            if ($rumahTidakLayakHuni->{$field}) {
+                Storage::disk('public')->delete($rumahTidakLayakHuni->{$field});
+            }
         }
 
         $rumahTidakLayakHuni->delete();
@@ -188,12 +227,41 @@ class RumahTidakLayakHuniController extends Controller
         return redirect()->route('rtlh.index')->with('success', 'Data berhasil dihapus.');
     }
 
+    /**
+     * Mengekspor data ke Excel.
+     */
     public function export()
     {
-        // Tentukan nama file yang akan diunduh
         $fileName = 'data-rumah-tidak-layak-huni-' . date('Y-m-d') . '.xlsx';
-
-        // Panggil class Export dan unduh filenya
         return Excel::download(new RumahTidakLayakHuniExport, $fileName);
     }
+
+
+
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            Excel::import(new RumahTidakLayakHuniImport, $request->file('file'));
+            return redirect()->route('rtlh.index')->with('success', 'Data berhasil diimpor!');
+
+        } catch (ValidationException $e) {
+            $failures = $e->failures();
+            $errorRows = [];
+            foreach ($failures as $failure) {
+                $errorRows[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+            // Kirim kembali dengan input dan error agar modal bisa terbuka lagi
+            return redirect()->route('rtlh.index')
+                ->with('import_errors', $errorRows)
+                ->withInput(); // withInput() penting untuk trigger di view
+
+        } catch (\Exception $e) {
+            return redirect()->route('rtlh.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }
+

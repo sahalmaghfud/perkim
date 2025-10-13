@@ -6,15 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage; // Ditambahkan
 
 class JalanLingkungan extends Model
 {
     use HasFactory;
     protected $table = 'jalan_lingkungan';
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'cv_id',
         'uraian',
+        'kecamatan',                // Ditambahkan
+        'desa',                     // Ditambahkan
+        'alamat',                   // Ditambahkan
         'volume',
         'satuan',
         'harga_satuan',
@@ -50,18 +59,19 @@ class JalanLingkungan extends Model
         'bast_nomor',
         'bast_tanggal',
         'keterangan',
+        'foto_sebelum',             // Ditambahkan
+        'foto_sesudah',             // Ditambahkan
     ];
 
+    /**
+     * Mendefinisikan relasi ke model Cv.
+     */
     public function cv(): BelongsTo
     {
         return $this->belongsTo(Cv::class);
     }
 
-    // Accessor untuk rekapitulasi (tetap sama)
-    protected function totalKeseluruhan(): Attribute
-    {
-        return Attribute::make(
-            get: fn() => ($this->total_30 ?? 0) + ($this->total_95 ?? 0) + ($this->total_100 ?? 0),
-        );
-    }
+    /**
+     * Accessor untuk rekapitulasi total pembayaran.
+     */
 }

@@ -9,15 +9,22 @@ class MapController extends Controller
 {
     public function index()
     {
-        // 1. Ambil semua data yang dibutuhkan dari database
-        $allData = RumahTidakLayakHuni::select('koordinat', 'nama_kepala_ruta', 'alamat', 'kategori_rumah', 'status', 'kecamatan', 'desa_kelurahan')
+        // 1. Ambil semua data yang dibutuhkan dari database, disesuaikan dengan skema baru
+        $allData = RumahTidakLayakHuni::select(
+            'koordinat',
+            'nama_kepala_ruta',
+            'alamat',
+            'kepemilikan_tanah', // Kolom baru yang relevan
+            'kecamatan',
+            'desa_kelurahan'
+        )
             ->whereNotNull('koordinat')
             ->get();
 
         // 2. Data untuk marker peta
         $locations = $allData;
 
-        // 3. [BARU] Hitung rekapitulasi per kecamatan dan desa
+        // 3. Hitung rekapitulasi per kecamatan dan desa
         $rekapitulasi = $allData->groupBy('kecamatan')->map(function ($kecamatanItems, $namaKecamatan) {
             // Hitung total untuk kecamatan ini
             $totalKecamatan = $kecamatanItems->count();

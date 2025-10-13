@@ -4,6 +4,9 @@
 @section('header-title', 'Manajemen Data RTLH')
 
 @section('content')
+    <!-- Include file modal -->
+    @include('rtlh._importModal')
+
     {{-- Notifikasi Sukses --}}
     @if (session('success'))
         <div id="success-alert"
@@ -39,7 +42,6 @@
             Filter & Pencarian
         </h3>
         <form action="{{ route('rtlh.index') }}" method="GET">
-            {{-- Menggunakan grid 2 kolom di medium screen, dan 4 kolom di large screen --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
 
                 {{-- 1. Search Input --}}
@@ -55,20 +57,7 @@
                     </div>
                 </div>
 
-                {{-- 2. Status Filter --}}
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Filter Status</label>
-                    <select name="status" id="status"
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-midnight_green focus:border-midnight_green">
-                        <option value="">-- Semua Status --</option>
-                        {{-- Menggunakan helper @selected() agar lebih bersih --}}
-                        <option value="belum diperbaiki" @selected(request('status') == 'belum diperbaiki')>Belum Diperbaiki</option>
-                        <option value="sedang diperbaiki" @selected(request('status') == 'sedang diperbaiki')>Sedang Diperbaiki</option>
-                        <option value="sudah diperbaiki" @selected(request('status') == 'sudah diperbaiki')>Sudah Diperbaiki</option>
-                    </select>
-                </div>
-
-                {{-- 3. Kecamatan Filter --}}
+                {{-- 2. Kecamatan Filter --}}
                 <div>
                     <label for="kecamatan" class="block text-sm font-medium text-gray-700 mb-1">Filter Kecamatan</label>
                     <select name="kecamatan" id="kecamatan"
@@ -82,7 +71,7 @@
                     </select>
                 </div>
 
-                {{-- 4. Desa/Kelurahan Filter (BARU) --}}
+                {{-- 3. Desa/Kelurahan Filter --}}
                 <div>
                     <label for="desa_kelurahan" class="block text-sm font-medium text-gray-700 mb-1">Filter
                         Desa/Kelurahan</label>
@@ -97,37 +86,57 @@
                     </select>
                 </div>
 
+                {{-- 4. Kepemilikan Tanah Filter (BARU) --}}
+                <div>
+                    <label for="kepemilikan_tanah" class="block text-sm font-medium text-gray-700 mb-1">Filter
+                        Kepemilikan</label>
+                    <select name="kepemilikan_tanah" id="kepemilikan_tanah"
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-midnight_green focus:border-midnight_green">
+                        <option value="">-- Semua Kepemilikan --</option>
+                        {{-- Asumsi $kepemilikanTanahOptions dikirim dari Controller --}}
+                        @foreach ($kepemilikanTanahOptions as $item)
+                            <option value="{{ $item->kepemilikan_tanah }}" @selected(request('kepemilikan_tanah') == $item->kepemilikan_tanah)>
+                                {{ $item->kepemilikan_tanah }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
             </div>
 
             {{-- Baris Tombol Aksi Form --}}
             <div class="flex flex-wrap justify-between items-center mt-6 gap-4">
                 {{-- Tombol Filter & Reset di Kiri --}}
                 <div class="flex flex-wrap gap-3">
-                    <!-- Tombol Filter -->
                     <button type="submit"
                         class="inline-flex items-center bg-midnight_green hover:bg-midnight_green-700 text-white font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                         <i class="fas fa-filter mr-2"></i>
                         Filter
                     </button>
-
-                    <!-- Tombol Reset -->
                     <a href="{{ route('rtlh.index') }}"
                         class="inline-flex items-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 border border-gray-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
                         <i class="fas fa-sync-alt mr-2 text-gray-600"></i>
                         Reset
                     </a>
-
-                    <!-- Tombol Peta Sebaran -->
                     <a href="{{ route('map.index') }}"
                         class="inline-flex items-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 border border-emerald-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
                         <i class="fas fa-map-marked-alt mr-2 text-emerald-600"></i>
                         Peta Sebaran RTLH
                     </a>
+                    <a href="{{ route('rtlh.export') }}"
+                        class="inline-flex items-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 border border-emerald-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                        <i class="fas fa-file-export mr-2 text-emerald-600"></i>
+                        Export Data RTLH
+                    </a>
+                    <button data-modal-toggle="importModal" type="button"
+                        class="inline-flex items-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 border border-emerald-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                        Import Data
+                    </button>
+
                 </div>
 
-
-
-                @if (Auth::check() && (Auth::user()->role == 'admin' || Auth::user()->bidang->nama_bidang == 'permukiman'))
+                @if (Auth::check() &&
+                        (Auth::user()->role == 'admin' || (Auth::user()->bidang && Auth::user()->bidang->nama_bidang == 'permukiman')))
                     {{-- Tombol Tambah di Kanan --}}
                     <a href="{{ route('rtlh.create') }}"
                         class="bg-midnight_green hover:bg-midnight_green-600 text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 shadow-md transform hover:scale-105 flex items-center gap-2">
@@ -155,7 +164,7 @@
                         <th class="px-6 py-3 text-left text-xs font-bold text-midnight_green-400 uppercase tracking-wider">
                             Kecamatan</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-midnight_green-400 uppercase tracking-wider">
-                            Status</th>
+                            Kepemilikan Tanah</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-midnight_green-400 uppercase tracking-wider">
                             Aksi</th>
                     </tr>
@@ -169,28 +178,14 @@
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-700">{{ $item->nik }}</td>
                             <td class="px-6 py-4 text-sm text-gray-700">{{ $item->kecamatan }}</td>
-                            <td class="px-6 py-4">
-                                {{-- Conditional Badge Coloring --}}
-                                @php
-                                    $statusClass = '';
-                                    if ($item->status == 'sudah diperbaiki') {
-                                        $statusClass = 'bg-green-100 text-green-800';
-                                    } elseif ($item->status == 'sedang diperbaiki') {
-                                        $statusClass = 'bg-yellow-100 text-yellow-800';
-                                    } else {
-                                        $statusClass = 'bg-red-100 text-red-800';
-                                    }
-                                @endphp
-                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
-                                    {{ $item->status }}
-                                </span>
-                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ $item->kepemilikan_tanah }}</td>
                             <td class="px-6 py-4 text-sm font-medium flex items-center gap-2">
                                 <a href="{{ route('rtlh.show', $item->id) }}" title="Lihat"
                                     class="text-gray-500 hover:text-midnight_green p-2 w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 transform hover:scale-110">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @if (Auth::check() && (Auth::user()->role == 'admin' || Auth::user()->bidang->nama_bidang == 'permukiman'))
+                                @if (Auth::check() &&
+                                        (Auth::user()->role == 'admin' || (Auth::user()->bidang && Auth::user()->bidang->nama_bidang == 'permukiman')))
                                     <a href="{{ route('rtlh.edit', $item->id) }}" title="Edit"
                                         class="text-ecru-300 hover:text-ecru-400 p-2 w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 transform hover:scale-110">
                                         <i class="fas fa-pencil-alt"></i>
