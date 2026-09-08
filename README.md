@@ -1,6 +1,6 @@
 # SINTAK - Sistem Informasi Tata Kelola Perumahan dan Kawasan Permukiman
 
-SINTAK adalah aplikasi web yang dibangun menggunakan Laravel untuk membantu pengelolaan data terkait perumahan dan kawasan permukiman (Perkim). Aplikasi ini mencakup berbagai modul untuk manajemen data internal, pelaporan, dan visualisasi.
+SINTAK adalah aplikasi web yang dibangun menggunakan Laravel untuk membantu pengelolaan data terkait perumahan dan kawasan permukiman (Perkim) Kabupaten Muaro Jambi. Aplikasi ini mencakup berbagai modul untuk manajemen data internal, pelaporan, dan visualisasi.
 
 ## Fitur Utama
 
@@ -22,5 +22,16 @@ Aplikasi ini memiliki beberapa modul utama:
 
 * **Backend**: PHP, Laravel Framework
 * **Frontend**: Tailwind CSS, Vite
-* **Database**: (Dapat dikonfigurasi, contoh: SQLite, MySQL, PostgreSQL)
-* **Lainnya**: Maatwebsite/Excel (untuk import/export), Spatie Laravel Permission (kemungkinan untuk manajemen role)
+* **Database**: MySQL
+* **Lainnya**: Maatwebsite/Excel, Spatie Laravel Permission
+
+# Halaman Login
+![login page](https://github.com/sahalmaghfud/perkim/blob/4a2a676c8112816b7dc1180f9f93959cda48c835/login_page.png)
+
+# Dashboard
+![dashboard](https://github.com/sahalmaghfud/perkim/blob/4a2a676c8112816b7dc1180f9f93959cda48c835/dashboard.png)
+
+# Manajemen Data
+![Manage Data](https://github.com/sahalmaghfud/perkim/blob/4a2a676c8112816b7dc1180f9f93959cda48c835/manage_data.png)
+
+
